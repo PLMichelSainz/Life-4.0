@@ -1,0 +1,81 @@
+# Catorcena — Finanzas y Tiempo
+
+App web (Vite + React) para calcular horas extra, consultar catorcenas de pago,
+registrar gastos de transporte y llevar una lista de deseos. Persistencia 100%
+en el cliente vía `localStorage` (sin backend, ideal para Vercel estático).
+
+## Desarrollo local
+
+```bash
+npm install
+npm run dev
+```
+
+## Build de producción
+
+```bash
+npm run build
+npm run preview
+```
+
+## Despliegue en Vercel
+
+1. Sube este proyecto a un repositorio de GitHub.
+2. En Vercel: **New Project** → importa el repo.
+3. Framework detectado automáticamente: **Vite**. Build command: `npm run build`.
+   Output directory: `dist`.
+4. Deploy. `vercel.json` ya incluye el rewrite SPA necesario.
+
+No se requiere ninguna variable de entorno ni base de datos: todo el estado
+(vive en `localStorage` del navegador de cada usuario.
+
+## Estructura
+
+```
+src/
+  components/       Sidebar, TopBar, StatusBadge
+  context/          ThemeContext (modo oscuro), AppDataContext (datos persistidos)
+  hooks/            useLocalStorage, useOnlineStatus
+  utils/            dates.js, overtime.js (Módulo A), payroll.js (Módulo B)
+  modules/
+    Overtime/       Módulo A — Calculadora de horas extra
+    Payroll/        Módulo B — Calendario de catorcenas
+    Transport/      Módulo C — Gastos de transporte
+    Wishlist/       Módulo D — Lista de deseos
+```
+
+## Reglas de negocio implementadas
+
+**Módulo A — Horas extra** (`src/utils/overtime.js`)
+- Tarifa ordinaria: $52.76 MXN/hr.
+- Jornada ordinaria de referencia: 35 hrs/semana hasta el 30/08/2026, 30 hrs desde
+  el 31/08/2026 (se muestra solo como referencia informativa).
+- Cálculo de pago (según especificación literal del negocio): las primeras 48
+  horas semanales se pagan a tarifa ordinaria; a partir de la hora 48 aplican
+  hasta 12 horas extra (1–9 al doble $105.52, 10–12 al triple $158.28). Cualquier
+  hora reportada más allá de 60/semana se marca como excedente sobre el límite
+  legal y se resalta en rojo.
+- ⚠️ Nota para revisión de negocio: esta lectura del requerimiento difiere de la
+  regla clásica de la LFT (donde el doble/triple aplica sobre las horas que
+  exceden la jornada ordinaria de 35/30, no sobre las que exceden 48). Se
+  implementó tal como se redactó en el prompt; si el criterio real es el de la
+  LFT clásica, solo hay que ajustar `calcularSemana()` en `overtime.js`.
+
+**Módulo B — Catorcenas** (`src/utils/payroll.js`)
+- Referencia: viernes 14/08/2026 = catorcena índice 0.
+- `indiceCatorcena()` calcula el índice de cualquier fecha; `catorcenaDe()`
+  regresa la catorcena vigente para "hoy".
+
+**Módulo C — Transporte**
+- Camión normal $11.00 / Transbordo $5.50.
+- Los días de la catorcena en curso anteriores a "hoy" quedan bloqueados
+  (`disabled`) para edición.
+
+**Módulo D — Wishlist**
+- CRUD completo en `AppDataContext` (`addWishlistItem`, `updateWishlistItem`,
+  `removeWishlistItem`, `toggleWishlistItem`) con total general y total
+  pendiente por completar.
+
+## Pendientes / siguientes pasos sugeridos
+
+Ver `CONTINUACION.md` para el prompt de continuación y la lista de pendientes.
