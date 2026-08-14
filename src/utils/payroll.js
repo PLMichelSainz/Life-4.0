@@ -1,30 +1,36 @@
-import { parseISODate, addDays, toISODate } from './dates'
+import { parseISODate, addDays } from './dates'
 
-export const FECHA_REFERENCIA = '2026-08-14' // viernes de pago base
+// Lunes de inicio del periodo trabajado de referencia (índice 0).
+// Periodo 27/jul–09/ago/2026 -> se paga el 14/ago/2026.
+export const ANCHOR_START = '2026-07-27'
+
+// Días que transcurren entre el fin del periodo trabajado (domingo) y el
+// día de pago (viernes siguiente-siguiente): domingo 09/ago -> viernes 14/ago = 5 días.
+export const DESFASE_PAGO_DIAS = 5
 
 /**
- * Devuelve el índice de catorcena (entero, puede ser negativo para el
- * pasado) al que pertenece la fecha dada, tomando FECHA_REFERENCIA como
- * el día de pago (viernes) del índice 0.
+ * Índice de catorcena (entero, puede ser negativo hacia el pasado) al que
+ * pertenece la fecha dada. El periodo con índice 0 es el que va de
+ * ANCHOR_START a ANCHOR_START+13 días.
  */
 export function indiceCatorcena(iso) {
-  const ref = parseISODate(FECHA_REFERENCIA)
+  const inicio = parseISODate(ANCHOR_START)
   const dia = parseISODate(iso)
-  const diffDias = Math.round((dia - ref) / 86400000)
-  return Math.ceil(diffDias / 14)
+  const diffDias = Math.round((dia - inicio) / 86400000)
+  return Math.floor(diffDias / 14)
 }
 
-/** Fecha de pago (viernes) de la catorcena con índice k. */
-export function fechaPagoCatorcena(k) {
-  return addDays(FECHA_REFERENCIA, 14 * k)
+/** Devuelve { index, start, end, payDate } del periodo con índice k. */
+export function catorcenaPorIndice(k) {
+  const start = addDays(ANCHOR_START, 14 * k)
+  const end = addDays(start, 13)
+  const payDate = addDays(end, DESFASE_PAGO_DIAS)
+  return { index: k, start, end, payDate }
 }
 
 /** Devuelve { index, start, end, payDate } de la catorcena que contiene `iso`. */
 export function catorcenaDe(iso) {
-  const k = indiceCatorcena(iso)
-  const payDate = fechaPagoCatorcena(k)
-  const start = addDays(payDate, -13)
-  return { index: k, start, end: payDate, payDate }
+  return catorcenaPorIndice(indiceCatorcena(iso))
 }
 
 /** Genera una lista de catorcenas alrededor de la actual: [antes..actual..despues]. */
@@ -32,9 +38,7 @@ export function listaCatorcenas(iso, antes = 2, despues = 3) {
   const actual = indiceCatorcena(iso)
   const lista = []
   for (let k = actual - antes; k <= actual + despues; k++) {
-    const payDate = fechaPagoCatorcena(k)
-    const start = addDays(payDate, -13)
-    lista.push({ index: k, start, end: payDate, payDate, esActual: k === actual })
+    lista.push({ ...catorcenaPorIndice(k), esActual: k === actual })
   }
   return lista
 }

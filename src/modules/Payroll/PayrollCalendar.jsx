@@ -21,7 +21,10 @@ export default function PayrollCalendar() {
 
       <div className="card">
         <p className="card-title">Próximas y anteriores catorcenas</p>
-        <p className="card-sub">Calculadas a partir de la fecha de referencia: viernes 14 de agosto de 2026.</p>
+        <p className="card-sub">
+          Periodo trabajado de 14 días (lunes a domingo); el pago cae 5 días después de terminado el periodo.
+          Referencia: periodo 27/jul–09/ago/2026, pagado el 14/ago/2026.
+        </p>
         {catorcenas.map((c) => (
           <div className="day-row" key={c.index}>
             <div>

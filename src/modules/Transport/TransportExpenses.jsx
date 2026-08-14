@@ -29,7 +29,9 @@ export default function TransportExpenses() {
     <div>
       <div className="card">
         <p className="card-title">Gasto acumulado — catorcena en curso</p>
-        <p className="card-sub">{formatShort(catorcena.start)} – {formatShort(catorcena.end)}</p>
+        <p className="card-sub">
+          {formatShort(catorcena.start)} – {formatShort(catorcena.end)} · se paga el {formatShort(catorcena.payDate)}
+        </p>
         <div className="grid cols-3">
           <div className="stat">
             <div className="label">Camión normal ({formatMXN(TARIFA_NORMAL)})</div>

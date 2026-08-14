@@ -29,10 +29,10 @@ export function AppDataProvider({ children }) {
     }))
   }
 
-  function addWishlistItem(nombre, precio) {
+  function addWishlistItem(nombre, precio, comentario = '') {
     setWishlist((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), nombre, precio: Number(precio) || 0, completado: false },
+      { id: crypto.randomUUID(), nombre, precio: Number(precio) || 0, comentario, completado: false },
     ])
   }
 
