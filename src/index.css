@@ -19,17 +19,17 @@
   --font-body: 'Inter', sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
 
-  --radius: 9px;
-  --radius-sm: 7px;
+  --radius: 10px;
+  --radius-sm: 8px;
 
   /* elevación / profundidad */
-  --shadow-1: 0 1px 2px rgba(0,0,0,.35);
-  --shadow-2: 0 4px 12px -2px rgba(0,0,0,.45), 0 1px 2px rgba(0,0,0,.3);
-  --shadow-3: 0 12px 32px -8px rgba(0,0,0,.55), 0 2px 6px rgba(0,0,0,.35);
+  --shadow-1: 0 1px 2px rgba(0,0,0,.28);
+  --shadow-2: 0 3px 10px -2px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.25);
+  --shadow-3: 0 10px 26px -8px rgba(0,0,0,.45), 0 2px 5px rgba(0,0,0,.3);
   --shadow-inset: inset 0 1px 0 rgba(255,255,255,.03);
 
   color-scheme: dark;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 html[data-theme='light'] {
@@ -61,8 +61,8 @@ body {
     var(--ink);
   color: var(--text);
   font-family: var(--font-body);
-  font-size: 0.94rem;
-  line-height: 1.45;
+  font-size: 0.96rem;
+  line-height: 1.48;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -79,7 +79,7 @@ a { color: inherit; }
 /* ---------- Layout ---------- */
 .app-shell {
   display: grid;
-  grid-template-columns: 216px 1fr;
+  grid-template-columns: 226px 1fr;
   min-height: 100vh;
 }
 
@@ -107,17 +107,17 @@ a { color: inherit; }
 .sidebar {
   background: var(--surface);
   border-right: 1px solid var(--border);
-  padding: 16px 12px;
+  padding: 18px 13px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
 }
 
 .brand {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 0.94rem;
-  padding: 4px 8px 14px;
+  font-size: 0.98rem;
+  padding: 5px 9px 16px;
   display: flex;
   align-items: baseline;
   gap: 7px;
@@ -133,12 +133,12 @@ a { color: inherit; }
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 8px 10px;
+  padding: 9px 11px;
   border-radius: var(--radius-sm);
   border: none;
   background: transparent;
   color: var(--text-muted);
-  font-size: 0.84rem;
+  font-size: 0.87rem;
   font-weight: 500;
   text-align: left;
   width: 100%;
@@ -156,14 +156,14 @@ a { color: inherit; }
 
 .topbar {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 11px 18px;
+  padding: 13px 20px;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
   box-shadow: var(--shadow-1);
   position: sticky; top: 0; z-index: 10;
 }
 .topbar-left { display: flex; align-items: center; gap: 10px; }
-.topbar h1 { font-size: 0.88rem !important; }
+.topbar h1 { font-size: 0.92rem !important; }
 .menu-btn {
   display: none; background: var(--surface-2); border: 1px solid var(--border);
   border-radius: var(--radius-sm); padding: 5px 9px; color: var(--text);
@@ -199,19 +199,19 @@ a { color: inherit; }
   box-shadow: var(--shadow-1);
 }
 
-.content { padding: 18px; max-width: 880px; width: 100%; margin: 0 auto; }
+.content { padding: 22px; max-width: 940px; width: 100%; margin: 0 auto; }
 
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 15px 16px;
-  margin-bottom: 12px;
+  padding: 17px 19px;
+  margin-bottom: 14px;
   box-shadow: var(--shadow-2), var(--shadow-inset);
 }
 
-.card-title { font-size: 0.86rem; font-weight: 600; margin: 0 0 3px; }
-.card-sub { color: var(--text-muted); font-size: 0.76rem; margin: 0 0 12px; }
+.card-title { font-size: 0.9rem; font-weight: 600; margin: 0 0 4px; }
+.card-sub { color: var(--text-muted); font-size: 0.79rem; margin: 0 0 13px; }
 
 .grid { display: grid; gap: 10px; }
 .grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
@@ -228,11 +228,11 @@ a { color: inherit; }
   background: var(--surface-2);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-sm);
-  padding: 10px 11px;
+  padding: 11px 13px;
   box-shadow: var(--shadow-1), var(--shadow-inset);
 }
 .stat .label { font-size: 0.66rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
-.stat .value { font-family: var(--font-mono); font-size: 1.05rem; font-weight: 600; margin-top: 3px; }
+.stat .value { font-family: var(--font-mono); font-size: 1.15rem; font-weight: 600; margin-top: 4px; }
 .stat .value.accent { color: var(--accent); }
 .stat .value.warn { color: var(--danger); }
 
@@ -241,9 +241,9 @@ input[type="number"], input[type="text"], select {
   border: 1px solid var(--border);
   color: var(--text);
   border-radius: var(--radius-sm);
-  padding: 7px 9px;
+  padding: 8px 10px;
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   width: 100%;
   box-shadow: inset 0 1px 3px rgba(0,0,0,.25);
 }
@@ -264,8 +264,8 @@ label { font-size: 0.72rem; color: var(--text-muted); display: block; margin-bot
   border: 1px solid var(--border);
   background: var(--surface-2);
   color: var(--text);
-  padding: 7px 12px;
-  font-size: 0.78rem;
+  padding: 8px 13px;
+  font-size: 0.82rem;
   font-weight: 500;
   box-shadow: var(--shadow-1);
   transition: transform .08s ease, box-shadow .08s ease;
@@ -283,7 +283,7 @@ label { font-size: 0.72rem; color: var(--text-muted); display: block; margin-bot
 }
 .day-row:last-child { border-bottom: none; }
 .day-row.locked { opacity: 0.5; }
-.day-name { font-weight: 600; font-size: 0.8rem; min-width: 80px; }
+.day-name { font-weight: 600; font-size: 0.84rem; min-width: 84px; }
 .day-date { color: var(--text-muted); font-size: 0.7rem; font-family: var(--font-mono); }
 
 /* ticket-stub perforation, used on payroll cards */
@@ -309,13 +309,14 @@ label { font-size: 0.72rem; color: var(--text-muted); display: block; margin-bot
 
 .wishlist-item { display: flex; align-items: center; gap: 9px; padding: 9px 0; border-bottom: 1px solid var(--border-soft); }
 .wishlist-item:last-child { border-bottom: none; }
-.wishlist-item .name { flex: 1; font-weight: 500; font-size: 0.86rem; }
+.wishlist-item .name { flex: 1; font-weight: 500; font-size: 0.89rem; }
 
 .empty { color: var(--text-muted); font-size: 0.8rem; padding: 16px 0; text-align: center; }
 
 .footer-note { color: var(--text-muted); font-size: 0.68rem; text-align: center; padding: 14px; }
 
 @media (max-width: 780px) {
-  .card { padding: 13px 14px; }
-  .stat .value { font-size: 0.95rem; }
+  .content { padding: 15px !important; }
+  .card { padding: 15px 16px; }
+  .stat .value { font-size: 1.02rem; }
 }
