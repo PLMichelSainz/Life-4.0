@@ -18,6 +18,7 @@ export default function App() {
   return (
     <div className="app-shell">
       <Sidebar active={moduleId} onSelect={seleccionar} open={menuOpen} />
+      <div className={`sidebar-backdrop${menuOpen ? ' open' : ''}`} onClick={() => setMenuOpen(false)} />
       <div className="main-col">
         <TopBar moduleId={moduleId} onMenuToggle={() => setMenuOpen((o) => !o)} />
         <main className="content">
