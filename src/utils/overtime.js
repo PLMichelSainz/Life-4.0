@@ -68,3 +68,19 @@ export function calcularSemana(horasPorDia, weekStartISO) {
 export function formatMXN(n) {
   return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(n || 0)
 }
+
+/**
+ * Calcula cuánto depositar a una tarjeta que cobra comisión por recarga,
+ * de modo que, después de descontar la comisión, quede exactamente
+ * cubierto (o ligeramente por encima, por el redondeo a centavos) el
+ * monto faltante.
+ */
+export function calcularRecarga(falta, comisionPct = 0.03) {
+  if (falta <= 0) {
+    return { falta: 0, montoTransferir: 0, comision: 0, quedaRecargado: 0 }
+  }
+  const montoTransferir = Math.ceil((falta / (1 - comisionPct)) * 100) / 100
+  const comision = Math.round(montoTransferir * comisionPct * 100) / 100
+  const quedaRecargado = Math.round((montoTransferir - comision) * 100) / 100
+  return { falta, montoTransferir, comision, quedaRecargado }
+}

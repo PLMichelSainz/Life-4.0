@@ -33,6 +33,17 @@ export function catorcenaDe(iso) {
   return catorcenaPorIndice(indiceCatorcena(iso))
 }
 
+/** Indica si la fecha dada es un viernes de pago (catorcenal). */
+export function esViernesDePago(iso) {
+  const inicio = parseISODate(ANCHOR_START)
+  const dia = parseISODate(iso)
+  // El primer viernes de pago es ANCHOR_START + 13 días (fin del periodo 0) + 5 días.
+  const primerPago = new Date(inicio)
+  primerPago.setDate(primerPago.getDate() + 13 + DESFASE_PAGO_DIAS)
+  const diffDias = Math.round((dia - primerPago) / 86400000)
+  return diffDias % 14 === 0
+}
+
 /** Genera una lista de catorcenas alrededor de la actual: [antes..actual..despues]. */
 export function listaCatorcenas(iso, antes = 2, despues = 3) {
   const actual = indiceCatorcena(iso)

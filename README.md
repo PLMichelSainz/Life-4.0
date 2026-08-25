@@ -71,6 +71,11 @@ src/
 - Camión normal $11.00 / Transbordo $5.50.
 - Los días de la catorcena en curso anteriores a "hoy" quedan bloqueados
   (`disabled`) para edición.
+- Calculadora de recarga (`calcularRecarga()` en `overtime.js`): a partir del
+  saldo actual de la tarjeta (persistente, se actualiza libremente) y el
+  total necesario de la catorcena, calcula cuánto falta y cuánto transferir
+  para que, después de una comisión del 3%, quede cubierto exactamente lo
+  que falta (redondeado hacia arriba en centavos para nunca quedar corto).
 
 **Módulo D — Wishlist**
 - CRUD completo en `AppDataContext` (`addWishlistItem`, `updateWishlistItem`,

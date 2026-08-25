@@ -16,6 +16,9 @@ export function AppDataProvider({ children }) {
   // deudas: [{ id, nombre, montoTotal, pagos: [{ id, monto, fecha }] }]
   const [deudas, setDeudas] = useLocalStorage('debts.items', [])
 
+  // saldo libre de la tarjeta de transporte (persiste, se actualiza manualmente)
+  const [tarjetaSaldo, setTarjetaSaldo] = useLocalStorage('transport.cardBalance', 0)
+
   function setHorasDia(weekStartISO, dayIndex, horas) {
     setHorasPorSemana((prev) => {
       const semanaActual = prev[weekStartISO] || [0, 0, 0, 0, 0, 0, 0]
@@ -98,6 +101,8 @@ export function AppDataProvider({ children }) {
     removeDeuda,
     addPagoDeuda,
     removePagoDeuda,
+    tarjetaSaldo,
+    setTarjetaSaldo,
   }
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>
