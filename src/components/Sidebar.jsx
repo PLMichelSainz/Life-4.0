@@ -3,6 +3,7 @@ const MODULOS = [
   { id: 'payroll', num: 'B', label: 'Catorcenas' },
   { id: 'transport', num: 'C', label: 'Transporte' },
   { id: 'wishlist', num: 'D', label: 'Lista de deseos' },
+  { id: 'debts', num: 'E', label: 'Deudas' },
 ]
 
 export default function Sidebar({ active, onSelect, open }) {

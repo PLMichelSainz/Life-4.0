@@ -5,6 +5,7 @@ import OvertimeCalculator from './modules/Overtime/OvertimeCalculator'
 import PayrollCalendar from './modules/Payroll/PayrollCalendar'
 import TransportExpenses from './modules/Transport/TransportExpenses'
 import Wishlist from './modules/Wishlist/Wishlist'
+import Debts from './modules/Debts/Debts'
 
 export default function App() {
   const [moduleId, setModuleId] = useState('overtime')
@@ -26,6 +27,7 @@ export default function App() {
           {moduleId === 'payroll' && <PayrollCalendar />}
           {moduleId === 'transport' && <TransportExpenses />}
           {moduleId === 'wishlist' && <Wishlist />}
+          {moduleId === 'debts' && <Debts />}
         </main>
         <p className="footer-note">Datos guardados localmente en este dispositivo (localStorage).</p>
       </div>

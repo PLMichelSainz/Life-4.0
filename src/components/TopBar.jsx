@@ -6,6 +6,7 @@ const TITULOS = {
   payroll: 'Calendario de catorcenas',
   transport: 'Gastos de transporte',
   wishlist: 'Lista de deseos',
+  debts: 'Deudas',
 }
 
 export default function TopBar({ moduleId, onMenuToggle }) {

@@ -42,6 +42,7 @@ src/
     Payroll/        Módulo B — Calendario de catorcenas
     Transport/      Módulo C — Gastos de transporte
     Wishlist/       Módulo D — Lista de deseos
+    Debts/          Módulo E — Deudas
 ```
 
 ## Reglas de negocio implementadas
@@ -74,7 +75,16 @@ src/
 **Módulo D — Wishlist**
 - CRUD completo en `AppDataContext` (`addWishlistItem`, `updateWishlistItem`,
   `removeWishlistItem`, `toggleWishlistItem`) con total general y total
-  pendiente por completar.
+  pendiente por completar. Cada ítem admite un comentario opcional.
+
+**Módulo E — Deudas**
+- Varias deudas independientes, cada una con nombre y monto total.
+- Historial de pagos por deuda (monto + fecha), se puede quitar un pago si
+  fue un error.
+- Una deuda se marca automáticamente como "liquidada" cuando la suma de sus
+  pagos alcanza el monto total; queda visible al final de la lista.
+- Resumen global arriba: total pagado acumulado y total pendiente entre
+  todas las deudas.
 
 ## Pendientes / siguientes pasos sugeridos
 
