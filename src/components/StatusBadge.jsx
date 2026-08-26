@@ -1,11 +1,12 @@
-import { useOnlineStatus } from '../hooks/useOnlineStatus'
+import { useAppData } from '../context/AppDataContext'
 
 export default function StatusBadge() {
-  const online = useOnlineStatus()
+  const { cloudOnline } = useAppData()
+
   return (
-    <span className={`status-badge ${online ? 'online' : 'offline'}`}>
+    <span className={`status-badge ${cloudOnline ? 'online' : 'offline'}`}>
       <span className="dot" />
-      {online ? 'Sync' : 'Offline'}
+      {cloudOnline ? 'ONLINE' : 'OFFLINE'}
     </span>
   )
 }

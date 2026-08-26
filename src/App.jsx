@@ -29,7 +29,7 @@ export default function App() {
           {moduleId === 'wishlist' && <Wishlist />}
           {moduleId === 'debts' && <Debts />}
         </main>
-        <p className="footer-note">Datos guardados localmente en este dispositivo (localStorage).</p>
+        <p className="footer-note">Datos guardados localmente y, si está configurada, sincronizados con la nube.</p>
       </div>
     </div>
   )
