@@ -94,20 +94,3 @@ src/
 ## Pendientes / siguientes pasos sugeridos
 
 Ver `CONTINUACION.md` para el prompt de continuación y la lista de pendientes.
-
-
-## Sincronización en la nube
-
-El proyecto conserva `localStorage` como fuente local para que los datos sigan disponibles
-sin conexión. Si se configuran `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`, `useCloudSync`
-verifica que la tabla remota sea accesible y sincroniza automáticamente al volver a estar
-disponible. Los cambios pendientes se conservan localmente mientras la nube no responde.
-
-Si la instancia todavía no tiene la tabla, usa `supabase.sql` en el SQL Editor de Supabase.
-El indicador superior muestra `ONLINE` únicamente cuando la aplicación puede leer/escribir
-en el almacenamiento remoto; de lo contrario muestra `OFFLINE`.
-
-## PWA
-
-El manifest, los iconos y el service worker están en `public/`. Las rutas usan `/` para que
-funcionen también después del build y despliegue en Vercel.
