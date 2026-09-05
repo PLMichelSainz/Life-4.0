@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { supabaseConfigurado } from '../lib/supabaseClient'
 
 export default function AuthGate({ children }) {
   const { session, loading, signIn, signUp } = useAuth()
@@ -9,6 +10,30 @@ export default function AuthGate({ children }) {
   const [error, setError] = useState('')
   const [aviso, setAviso] = useState('')
   const [enviando, setEnviando] = useState(false)
+
+  if (!supabaseConfigurado) {
+    return (
+      <div style={{ maxWidth: 480, margin: '60px auto', padding: '0 16px' }}>
+        <div className="card">
+          <p className="card-title">Falta configurar Supabase</p>
+          <p className="card-sub">
+            La app no puede conectarse porque no encontró tus credenciales de Supabase. Crea un archivo{' '}
+            <code>.env</code> en la raíz del proyecto (puedes copiar <code>.env.example</code>) con:
+          </p>
+          <pre style={{ background: 'var(--surface-2)', padding: 10, borderRadius: 8, fontSize: '0.8rem', overflowX: 'auto' }}>
+{`VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
+VITE_SUPABASE_ANON_KEY=tu-anon-key`}
+          </pre>
+          <p className="card-sub" style={{ marginBottom: 0 }}>
+            Toma esos valores de tu proyecto en supabase.com (Project Settings → API), corre{' '}
+            <code>supabase/schema.sql</code> en el SQL Editor de ese proyecto, y reinicia <code>npm run dev</code>{' '}
+            (o vuelve a desplegar) después de guardar el <code>.env</code>. Más detalle en{' '}
+            <code>supabase/README.md</code>.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   if (loading) {
     return <div className="empty" style={{ paddingTop: 60 }}>Cargando…</div>
