@@ -1,27 +1,41 @@
 import { createContext, useContext } from 'react'
-import { useLocalStorage } from '../hooks/useLocalStorage'
+import { useCloudState } from '../hooks/useCloudState'
+import { useAuth } from './AuthContext'
 import { TARIFA_ORDINARIA } from '../utils/overtime'
 
 const AppDataContext = createContext(null)
 
 export function AppDataProvider({ children }) {
+  const { user } = useAuth()
+  const uid = user?.id
+
   // horasPorSemana: { [weekStartISO]: [h0..h6] } (lunes..domingo)
-  const [horasPorSemana, setHorasPorSemana] = useLocalStorage('overtime.weeks', {})
+  const [horasPorSemana, setHorasPorSemana] = useCloudState(uid, 'overtime.weeks', {})
 
-  // transporte: { [dateISO]: { normal: number, transbordo: number } }
-  const [transporte, setTransporte] = useLocalStorage('transport.days', {})
+  // transporte: { [dateISO]: { normal: number, transbordo: number } } (solo días editados a mano)
+  const [transporte, setTransporte] = useCloudState(uid, 'transport.days', {})
 
-  // wishlist: [{ id, nombre, precio, completado }]
-  const [wishlist, setWishlist] = useLocalStorage('wishlist.items', [])
+  // cuántos camiones/transbordos se asumen por día si el usuario no lo cambia ese día
+  const [transporteDefault, setTransporteDefault] = useCloudState(uid, 'transport.defaults', {
+    normal: 2,
+    transbordo: 2,
+  })
+
+  // wishlist: [{ id, nombre, precio, comentario, completado, aportes: [{id, monto, fecha}] }]
+  const [wishlist, setWishlist] = useCloudState(uid, 'wishlist.items', [])
 
   // deudas: [{ id, nombre, montoTotal, pagos: [{ id, monto, fecha }] }]
-  const [deudas, setDeudas] = useLocalStorage('debts.items', [])
+  const [deudas, setDeudas] = useCloudState(uid, 'debts.items', [])
 
-  // saldo libre de la tarjeta de transporte (persiste, se actualiza manualmente)
-  const [tarjetaSaldo, setTarjetaSaldo] = useLocalStorage('transport.cardBalance', 0)
+  // saldo libre de la tarjeta de transporte (se actualiza manualmente)
+  const [tarjetaSaldo, setTarjetaSaldo] = useCloudState(uid, 'transport.cardBalance', 0)
 
   // tarifa por hora usada en la pestaña de Salarios (editable, por si cambia)
-  const [tarifaPorHora, setTarifaPorHora] = useLocalStorage('salaries.hourlyRate', TARIFA_ORDINARIA)
+  const [tarifaPorHora, setTarifaPorHora] = useCloudState(uid, 'salaries.hourlyRate', TARIFA_ORDINARIA)
+
+  // otras deducciones personalizadas (Infonavit, Fonacot, pensión alimenticia, sindicato, etc.)
+  // [{ id, nombre, tipo: 'porcentaje' | 'monto', valor }]
+  const [otrasDeducciones, setOtrasDeducciones] = useCloudState(uid, 'salaries.otherDeductions', [])
 
   function setHorasDia(weekStartISO, dayIndex, horas) {
     setHorasPorSemana((prev) => {
@@ -42,7 +56,7 @@ export function AppDataProvider({ children }) {
   function addWishlistItem(nombre, precio, comentario = '') {
     setWishlist((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), nombre, precio: Number(precio) || 0, comentario, completado: false },
+      { id: crypto.randomUUID(), nombre, precio: Number(precio) || 0, comentario, completado: false, aportes: [] },
     ])
   }
 
@@ -56,6 +70,24 @@ export function AppDataProvider({ children }) {
 
   function toggleWishlistItem(id) {
     setWishlist((prev) => prev.map((it) => (it.id === id ? { ...it, completado: !it.completado } : it)))
+  }
+
+  function addAporteWishlist(itemId, monto, fecha) {
+    setWishlist((prev) =>
+      prev.map((it) =>
+        it.id === itemId
+          ? { ...it, aportes: [...(it.aportes || []), { id: crypto.randomUUID(), monto: Number(monto) || 0, fecha }] }
+          : it
+      )
+    )
+  }
+
+  function removeAporteWishlist(itemId, aporteId) {
+    setWishlist((prev) =>
+      prev.map((it) =>
+        it.id === itemId ? { ...it, aportes: (it.aportes || []).filter((a) => a.id !== aporteId) } : it
+      )
+    )
   }
 
   function addDeuda(nombre, montoTotal) {
@@ -89,16 +121,31 @@ export function AppDataProvider({ children }) {
     )
   }
 
+  function addDeduccion(nombre, tipo, valor) {
+    setOtrasDeducciones((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), nombre, tipo, valor: Number(valor) || 0 },
+    ])
+  }
+
+  function removeDeduccion(id) {
+    setOtrasDeducciones((prev) => prev.filter((d) => d.id !== id))
+  }
+
   const value = {
     horasPorSemana,
     setHorasDia,
     transporte,
     setTransporteDia,
+    transporteDefault,
+    setTransporteDefault,
     wishlist,
     addWishlistItem,
     updateWishlistItem,
     removeWishlistItem,
     toggleWishlistItem,
+    addAporteWishlist,
+    removeAporteWishlist,
     deudas,
     addDeuda,
     updateDeuda,
@@ -109,6 +156,9 @@ export function AppDataProvider({ children }) {
     setTarjetaSaldo,
     tarifaPorHora,
     setTarifaPorHora,
+    otrasDeducciones,
+    addDeduccion,
+    removeDeduccion,
   }
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>

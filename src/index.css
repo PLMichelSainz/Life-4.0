@@ -123,9 +123,8 @@ a { color: inherit; }
   gap: 7px;
 }
 .brand .brand-mark {
-  width: 8px; height: 8px; border-radius: 2px;
-  background: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+  width: 22px; height: 22px; border-radius: 5px;
+  object-fit: contain;
   display: inline-block;
 }
 

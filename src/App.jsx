@@ -31,7 +31,7 @@ export default function App() {
           {moduleId === 'debts' && <Debts />}
           {moduleId === 'salaries' && <SalaryRates />}
         </main>
-        <p className="footer-note">Datos guardados localmente en este dispositivo (localStorage).</p>
+        <p className="footer-note">Datos sincronizados en la nube: se actualizan automáticamente en todos tus dispositivos donde inicies sesión.</p>
       </div>
     </div>
   )

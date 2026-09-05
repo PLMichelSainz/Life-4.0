@@ -1,5 +1,6 @@
 import StatusBadge from './StatusBadge'
 import { useTheme } from '../context/ThemeContext'
+import { useAuth } from '../context/AuthContext'
 
 const TITULOS = {
   overtime: 'Calculadora de horas extra',
@@ -7,10 +8,12 @@ const TITULOS = {
   transport: 'Gastos de transporte',
   wishlist: 'Lista de deseos',
   debts: 'Deudas',
+  salaries: 'Salarios',
 }
 
 export default function TopBar({ moduleId, onMenuToggle }) {
   const { theme, toggleTheme } = useTheme()
+  const { user, signOut } = useAuth()
   return (
     <header className="topbar">
       <div className="topbar-left">
@@ -21,6 +24,9 @@ export default function TopBar({ moduleId, onMenuToggle }) {
         <StatusBadge />
         <button className="theme-toggle" onClick={toggleTheme}>
           {theme === 'dark' ? '☾ Oscuro' : '☀ Claro'}
+        </button>
+        <button className="theme-toggle" onClick={signOut} title={user?.email ? `Sesión: ${user.email}` : ''}>
+          Salir
         </button>
       </div>
     </header>

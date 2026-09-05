@@ -79,7 +79,9 @@ export function calcularRecarga(falta, comisionPct = 0.03) {
   if (falta <= 0) {
     return { falta: 0, montoTransferir: 0, comision: 0, quedaRecargado: 0 }
   }
-  const montoTransferir = Math.ceil((falta / (1 - comisionPct)) * 100) / 100
+  // Se redondea hacia arriba a peso entero (sin centavos) para que el monto
+  // a transferir sea una cifra "cerrada" ya considerando la comisión.
+  const montoTransferir = Math.ceil(falta / (1 - comisionPct))
   const comision = Math.round(montoTransferir * comisionPct * 100) / 100
   const quedaRecargado = Math.round((montoTransferir - comision) * 100) / 100
   return { falta, montoTransferir, comision, quedaRecargado }

@@ -1,3 +1,5 @@
+import { useAuth } from '../context/AuthContext'
+
 const MODULOS = [
   { id: 'overtime', num: 'A', label: 'Horas extra' },
   { id: 'payroll', num: 'B', label: 'Catorcenas' },
@@ -8,10 +10,11 @@ const MODULOS = [
 ]
 
 export default function Sidebar({ active, onSelect, open }) {
+  const { user, signOut } = useAuth()
   return (
     <nav className={`sidebar${open ? ' open' : ''}`}>
       <div className="brand">
-        <span className="brand-mark" />
+        <img src="/icon.png" alt="" className="brand-mark" />
         Catorcena
       </div>
       {MODULOS.map((m) => (
@@ -24,6 +27,14 @@ export default function Sidebar({ active, onSelect, open }) {
           {m.label}
         </button>
       ))}
+      {user && (
+        <div style={{ marginTop: 'auto', paddingTop: 14 }}>
+          <div className="card-sub" style={{ padding: '0 14px', wordBreak: 'break-all' }}>{user.email}</div>
+          <button className="btn" style={{ margin: '8px 14px', width: 'calc(100% - 28px)' }} onClick={signOut}>
+            Cerrar sesión
+          </button>
+        </div>
+      )}
     </nav>
   )
 }
