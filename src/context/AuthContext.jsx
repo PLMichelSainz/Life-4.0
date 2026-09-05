@@ -6,6 +6,7 @@ const AuthContext = createContext(null)
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [recovery, setRecovery] = useState(false)
 
   useEffect(() => {
     if (!supabaseConfigurado) {
@@ -19,7 +20,8 @@ export function AuthProvider({ children }) {
         setLoading(false)
       })
       .catch(() => setLoading(false))
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
+      if (event === 'PASSWORD_RECOVERY') setRecovery(true)
       setSession(newSession)
     })
     return () => sub.subscription.unsubscribe()
@@ -39,7 +41,30 @@ export function AuthProvider({ children }) {
     await supabase.auth.signOut()
   }
 
-  const value = { session, user: session?.user ?? null, loading, signIn, signUp, signOut }
+  async function sendPasswordReset(email) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin,
+    })
+    return { error }
+  }
+
+  async function updatePassword(newPassword) {
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    if (!error) setRecovery(false)
+    return { error }
+  }
+
+  const value = {
+    session,
+    user: session?.user ?? null,
+    loading,
+    recovery,
+    signIn,
+    signUp,
+    signOut,
+    sendPasswordReset,
+    updatePassword,
+  }
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 

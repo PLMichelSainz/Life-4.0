@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useAppData } from '../../context/AppDataContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { formatMXN } from '../../utils/overtime'
 import { formatShort, todayISO } from '../../utils/dates'
 
@@ -11,7 +12,7 @@ function calcularMeta(item) {
   return { ahorrado, restante, lista, avance }
 }
 
-function TarjetaMeta({ item }) {
+function TarjetaMeta({ item, t, lang }) {
   const { addAporteWishlist, removeAporteWishlist, removeWishlistItem, updateWishlistItem } = useAppData()
   const [montoAporte, setMontoAporte] = useState('')
   const [fechaAporte, setFechaAporte] = useState(todayISO())
@@ -44,34 +45,34 @@ function TarjetaMeta({ item }) {
         <div>
           <p className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {item.nombre}
-            {lista && <span className="pill current">lista</span>}
+            {lista && <span className="pill current">{t('wishlist.done')}</span>}
           </p>
           <p className="card-sub" style={{ marginBottom: 0 }}>
-            Costo: {formatMXN(item.precio)}
+            {t('wishlist.costLabel')} {formatMXN(item.precio)}
             {item.comentario ? ` · ${item.comentario}` : ''}
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn" onClick={() => setEditando((v) => !v)}>{editando ? 'Cerrar' : 'Editar'}</button>
-          <button className="btn danger" onClick={() => removeWishlistItem(item.id)}>Eliminar</button>
+          <button className="btn" onClick={() => setEditando((v) => !v)}>{editando ? t('common.close') : t('common.edit')}</button>
+          <button className="btn danger" onClick={() => removeWishlistItem(item.id)}>{t('common.delete')}</button>
         </div>
       </div>
 
       {editando && (
         <form onSubmit={guardarEdicion} style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 12 }}>
           <div style={{ flex: 2, minWidth: 160 }}>
-            <label>Nombre</label>
+            <label>{t('common.name')}</label>
             <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} />
           </div>
           <div style={{ flex: 1, minWidth: 110 }}>
-            <label>Costo (MXN)</label>
+            <label>{t('wishlist.cost')}</label>
             <input type="number" min="0" value={precio} onChange={(e) => setPrecio(e.target.value)} />
           </div>
           <div style={{ flexBasis: '100%' }}>
-            <label>Comentario (opcional)</label>
+            <label>{t('common.comment')}</label>
             <input type="text" value={comentario} onChange={(e) => setComentario(e.target.value)} />
           </div>
-          <button type="submit" className="btn primary">Guardar cambios</button>
+          <button type="submit" className="btn primary">{t('common.saveChanges')}</button>
         </form>
       )}
 
@@ -86,20 +87,20 @@ function TarjetaMeta({ item }) {
             }}
           />
         </div>
-        <div className="card-sub" style={{ marginTop: 6, marginBottom: 0 }}>{avance}% ahorrado</div>
+        <div className="card-sub" style={{ marginTop: 6, marginBottom: 0 }}>{avance}{t('wishlist.savedPct')}</div>
       </div>
 
       <div className="grid cols-3">
         <div className="stat">
-          <div className="label">Ahorrado</div>
+          <div className="label">{t('wishlist.saved')}</div>
           <div className="value mono">{formatMXN(ahorrado)}</div>
         </div>
         <div className="stat" style={{ borderColor: lista ? 'var(--online)' : 'var(--accent)' }}>
-          <div className="label">Restante</div>
+          <div className="label">{t('wishlist.remaining')}</div>
           <div className={`value mono ${lista ? '' : 'accent'}`}>{formatMXN(restante)}</div>
         </div>
         <div className="stat">
-          <div className="label">Aportes registrados</div>
+          <div className="label">{t('wishlist.contributionsCount')}</div>
           <div className="value mono">{(item.aportes || []).length}</div>
         </div>
       </div>
@@ -107,21 +108,21 @@ function TarjetaMeta({ item }) {
       {!lista && (
         <form onSubmit={registrarAporte} style={{ display: 'flex', gap: 8, alignItems: 'flex-end', marginTop: 14, flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: 110 }}>
-            <label>Monto del aporte</label>
+            <label>{t('wishlist.contributionAmount')}</label>
             <input type="number" min="0" value={montoAporte} onChange={(e) => setMontoAporte(e.target.value)} placeholder="0.00" />
           </div>
           <div style={{ flex: 1, minWidth: 130 }}>
-            <label>Fecha</label>
+            <label>{t('common.date')}</label>
             <input type="date" value={fechaAporte} onChange={(e) => setFechaAporte(e.target.value)} />
           </div>
-          <button type="submit" className="btn primary">Agregar aporte</button>
+          <button type="submit" className="btn primary">{t('wishlist.addContribution')}</button>
         </form>
       )}
 
       {(item.aportes || []).length > 0 && (
         <div style={{ marginTop: 12 }}>
           <button className="btn" onClick={() => setVerHistorial((v) => !v)}>
-            {verHistorial ? 'Ocultar historial' : `Ver historial (${item.aportes.length})`}
+            {verHistorial ? t('wishlist.hideHistory') : t('wishlist.viewHistory')(item.aportes.length)}
           </button>
           {verHistorial && (
             <div style={{ marginTop: 8 }}>
@@ -131,9 +132,9 @@ function TarjetaMeta({ item }) {
                   <div className="day-row" key={a.id}>
                     <div>
                       <div className="day-name mono">{formatMXN(a.monto)}</div>
-                      <div className="day-date">{formatShort(a.fecha)}</div>
+                      <div className="day-date">{formatShort(a.fecha, lang)}</div>
                     </div>
-                    <button className="btn danger" onClick={() => removeAporteWishlist(item.id, a.id)}>Quitar</button>
+                    <button className="btn danger" onClick={() => removeAporteWishlist(item.id, a.id)}>{t('common.remove')}</button>
                   </div>
                 ))}
             </div>
@@ -146,6 +147,7 @@ function TarjetaMeta({ item }) {
 
 export default function Wishlist() {
   const { wishlist, addWishlistItem } = useAppData()
+  const { t, lang } = useLanguage()
   const [nombre, setNombre] = useState('')
   const [precio, setPrecio] = useState('')
   const [comentario, setComentario] = useState('')
@@ -169,53 +171,53 @@ export default function Wishlist() {
   return (
     <div>
       <div className="card">
-        <p className="card-title">Resumen global</p>
+        <p className="card-title">{t('wishlist.globalSummary')}</p>
         <div className="grid cols-2">
           <div className="stat">
-            <div className="label">Total ahorrado acumulado</div>
+            <div className="label">{t('wishlist.totalSaved')}</div>
             <div className="value mono">{formatMXN(totalAhorradoGlobal)}</div>
           </div>
           <div className="stat" style={{ borderColor: 'var(--accent)' }}>
-            <div className="label">Total pendiente por ahorrar</div>
+            <div className="label">{t('wishlist.totalPending')}</div>
             <div className="value accent mono">{formatMXN(totalRestanteGlobal)}</div>
           </div>
         </div>
       </div>
 
       <div className="card">
-        <p className="card-title">Agregar meta o producto</p>
+        <p className="card-title">{t('wishlist.addGoal')}</p>
         <form onSubmit={submit} style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
           <div style={{ flex: 2, minWidth: 160 }}>
-            <label>Nombre</label>
-            <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej. Bicicleta" />
+            <label>{t('common.name')}</label>
+            <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder={t('wishlist.namePlaceholder')} />
           </div>
           <div style={{ flex: 1, minWidth: 110 }}>
-            <label>Costo (MXN)</label>
+            <label>{t('wishlist.cost')}</label>
             <input type="number" min="0" value={precio} onChange={(e) => setPrecio(e.target.value)} placeholder="0.00" />
           </div>
           <div style={{ flexBasis: '100%' }}>
-            <label>Comentario (opcional)</label>
+            <label>{t('common.comment')}</label>
             <input
               type="text"
               value={comentario}
               onChange={(e) => setComentario(e.target.value)}
-              placeholder="Ej. color negro, talla M, esperar oferta..."
+              placeholder={t('wishlist.commentPlaceholder')}
             />
           </div>
-          <button type="submit" className="btn primary">Agregar</button>
+          <button type="submit" className="btn primary">{t('common.add')}</button>
         </form>
       </div>
 
       {activas.length === 0 && listas.length === 0 && (
-        <div className="card"><p className="empty">Aún no agregas ninguna meta.</p></div>
+        <div className="card"><p className="empty">{t('wishlist.empty')}</p></div>
       )}
 
-      {activas.map((it) => <TarjetaMeta key={it.id} item={it} />)}
+      {activas.map((it) => <TarjetaMeta key={it.id} item={it} t={t} lang={lang} />)}
 
       {listas.length > 0 && (
         <>
-          <p className="card-sub" style={{ margin: '18px 4px 8px' }}>Ya completadas</p>
-          {listas.map((it) => <TarjetaMeta key={it.id} item={it} />)}
+          <p className="card-sub" style={{ margin: '18px 4px 8px' }}>{t('wishlist.completed')}</p>
+          {listas.map((it) => <TarjetaMeta key={it.id} item={it} t={t} lang={lang} />)}
         </>
       )}
     </div>

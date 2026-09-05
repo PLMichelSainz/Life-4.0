@@ -75,5 +75,20 @@ export function useCloudState(userId, key, initialValue) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, userId, key, ready])
 
-  return [value, setValue]
+  async function refetch() {
+    if (!userId) return
+    const { data, error } = await supabase
+      .from('app_state')
+      .select('value')
+      .eq('user_id', userId)
+      .eq('key', key)
+      .maybeSingle()
+    if (!error && data) {
+      skipNextPush.current = true
+      setValue(data.value)
+    }
+    return { error }
+  }
+
+  return [value, setValue, refetch]
 }

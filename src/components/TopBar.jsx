@@ -1,32 +1,28 @@
 import StatusBadge from './StatusBadge'
 import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
+import { useLanguage } from '../context/LanguageContext'
 
-const TITULOS = {
-  overtime: 'Calculadora de horas extra',
-  payroll: 'Calendario de catorcenas',
-  transport: 'Gastos de transporte',
-  wishlist: 'Lista de deseos',
-  debts: 'Deudas',
-  salaries: 'Salarios',
-}
-
-export default function TopBar({ moduleId, onMenuToggle }) {
+export default function TopBar({ moduleId }) {
   const { theme, toggleTheme } = useTheme()
   const { user, signOut } = useAuth()
+  const { t, lang, toggleLang } = useLanguage()
+
   return (
     <header className="topbar">
       <div className="topbar-left">
-        <button className="menu-btn" onClick={onMenuToggle} aria-label="Abrir menú">☰</button>
-        <h1 style={{ fontSize: '1rem', margin: 0 }}>{TITULOS[moduleId]}</h1>
+        <h1 className="topbar-title">{t(`topbar.titles.${moduleId}`)}</h1>
       </div>
       <div className="topbar-left">
         <StatusBadge />
-        <button className="theme-toggle" onClick={toggleTheme}>
-          {theme === 'dark' ? '☾ Oscuro' : '☀ Claro'}
+        <button className="theme-toggle" onClick={toggleLang} title="ES / EN">
+          {lang === 'es' ? '🇲🇽 ES' : '🇬🇧 EN'}
         </button>
-        <button className="theme-toggle" onClick={signOut} title={user?.email ? `Sesión: ${user.email}` : ''}>
-          Salir
+        <button className="theme-toggle" onClick={toggleTheme}>
+          {theme === 'dark' ? t('topbar.dark') : t('topbar.light')}
+        </button>
+        <button className="theme-toggle sign-out-desktop" onClick={signOut} title={user?.email || ''}>
+          {t('sidebar.signOut')}
         </button>
       </div>
     </header>

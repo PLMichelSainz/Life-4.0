@@ -1,37 +1,46 @@
 import { useAuth } from '../context/AuthContext'
+import { useLanguage } from '../context/LanguageContext'
+import { useLocalStorage } from '../hooks/useLocalStorage'
+import { ICONS } from './NavIcons'
 
-const MODULOS = [
-  { id: 'overtime', num: 'A', label: 'Horas extra' },
-  { id: 'payroll', num: 'B', label: 'Catorcenas' },
-  { id: 'transport', num: 'C', label: 'Transporte' },
-  { id: 'wishlist', num: 'D', label: 'Lista de deseos' },
-  { id: 'debts', num: 'E', label: 'Deudas' },
-  { id: 'salaries', num: 'F', label: 'Salarios' },
-]
+const MODULOS = ['overtime', 'payroll', 'transport', 'wishlist', 'debts', 'salaries', 'budget']
 
-export default function Sidebar({ active, onSelect, open }) {
+export default function Sidebar({ active, onSelect }) {
   const { user, signOut } = useAuth()
+  const { t } = useLanguage()
+  const [collapsed, setCollapsed] = useLocalStorage('sidebar.collapsed', false)
+
   return (
-    <nav className={`sidebar${open ? ' open' : ''}`}>
+    <nav className={`sidebar${collapsed ? ' collapsed' : ''}`}>
       <div className="brand">
         <img src="/icon.png" alt="" className="brand-mark" />
-        Catorcena
+        <span className="brand-text">{t('sidebar.brand')}</span>
       </div>
-      {MODULOS.map((m) => (
-        <button
-          key={m.id}
-          className={`nav-item${active === m.id ? ' active' : ''}`}
-          onClick={() => onSelect(m.id)}
-        >
-          <span className="num">{m.num}</span>
-          {m.label}
-        </button>
-      ))}
+
+      {MODULOS.map((id) => {
+        const Icon = ICONS[id]
+        return (
+          <button
+            key={id}
+            className={`nav-item${active === id ? ' active' : ''}`}
+            onClick={() => onSelect(id)}
+            title={collapsed ? t(`sidebar.${id}`) : undefined}
+          >
+            <span className="nav-icon"><Icon /></span>
+            <span className="nav-label">{t(`sidebar.${id}`)}</span>
+          </button>
+        )
+      })}
+
+      <button className="collapse-toggle" onClick={() => setCollapsed((c) => !c)} title={collapsed ? t('sidebar.expand') : t('sidebar.collapse')}>
+        {collapsed ? '»' : '«'}
+      </button>
+
       {user && (
-        <div style={{ marginTop: 'auto', paddingTop: 14 }}>
-          <div className="card-sub" style={{ padding: '0 14px', wordBreak: 'break-all' }}>{user.email}</div>
-          <button className="btn" style={{ margin: '8px 14px', width: 'calc(100% - 28px)' }} onClick={signOut}>
-            Cerrar sesión
+        <div className="sidebar-account">
+          <div className="card-sub sidebar-email">{user.email}</div>
+          <button className="btn sidebar-signout" onClick={signOut} title={t('sidebar.signOut')}>
+            {collapsed ? '⏻' : t('sidebar.signOut')}
           </button>
         </div>
       )}
