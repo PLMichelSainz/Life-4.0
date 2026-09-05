@@ -12,10 +12,14 @@ function calcularDeuda(deuda) {
 }
 
 function TarjetaDeuda({ deuda }) {
-  const { addPagoDeuda, removePagoDeuda, removeDeuda } = useAppData()
+  const { addPagoDeuda, removePagoDeuda, removeDeuda, updateDeuda } = useAppData()
   const [montoPago, setMontoPago] = useState('')
   const [fechaPago, setFechaPago] = useState(todayISO())
   const [verHistorial, setVerHistorial] = useState(false)
+  const [editando, setEditando] = useState(false)
+  const [nombre, setNombre] = useState(deuda.nombre)
+  const [montoTotal, setMontoTotal] = useState(String(deuda.montoTotal))
+  const [comentario, setComentario] = useState(deuda.comentario || '')
 
   const { pagado, pendiente, liquidada, avance } = useMemo(() => calcularDeuda(deuda), [deuda])
 
@@ -27,6 +31,13 @@ function TarjetaDeuda({ deuda }) {
     setMontoPago('')
   }
 
+  function guardarEdicion(e) {
+    e.preventDefault()
+    if (!nombre.trim()) return
+    updateDeuda(deuda.id, { nombre: nombre.trim(), montoTotal: Number(montoTotal) || 0, comentario: comentario.trim() })
+    setEditando(false)
+  }
+
   return (
     <div className="card" style={liquidada ? { opacity: 0.75 } : undefined}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
@@ -35,10 +46,34 @@ function TarjetaDeuda({ deuda }) {
             {deuda.nombre}
             {liquidada && <span className="pill current">liquidada</span>}
           </p>
-          <p className="card-sub" style={{ marginBottom: 0 }}>Monto total: {formatMXN(deuda.montoTotal)}</p>
+          <p className="card-sub" style={{ marginBottom: 0 }}>
+            Monto total: {formatMXN(deuda.montoTotal)}
+            {deuda.comentario ? ` · ${deuda.comentario}` : ''}
+          </p>
         </div>
-        <button className="btn danger" onClick={() => removeDeuda(deuda.id)}>Eliminar</button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn" onClick={() => setEditando((v) => !v)}>{editando ? 'Cerrar' : 'Editar'}</button>
+          <button className="btn danger" onClick={() => removeDeuda(deuda.id)}>Eliminar</button>
+        </div>
       </div>
+
+      {editando && (
+        <form onSubmit={guardarEdicion} style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 12 }}>
+          <div style={{ flex: 2, minWidth: 160 }}>
+            <label>Nombre</label>
+            <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} />
+          </div>
+          <div style={{ flex: 1, minWidth: 110 }}>
+            <label>Monto total (MXN)</label>
+            <input type="number" min="0" value={montoTotal} onChange={(e) => setMontoTotal(e.target.value)} />
+          </div>
+          <div style={{ flexBasis: '100%' }}>
+            <label>Comentario (opcional)</label>
+            <input type="text" value={comentario} onChange={(e) => setComentario(e.target.value)} />
+          </div>
+          <button type="submit" className="btn primary">Guardar cambios</button>
+        </form>
+      )}
 
       <div style={{ margin: '12px 0' }}>
         <div style={{ height: 8, borderRadius: 999, background: 'var(--surface-3)', overflow: 'hidden', boxShadow: 'var(--shadow-inset)' }}>
@@ -113,6 +148,7 @@ export default function Debts() {
   const { deudas, addDeuda } = useAppData()
   const [nombre, setNombre] = useState('')
   const [monto, setMonto] = useState('')
+  const [comentario, setComentario] = useState('')
 
   const calculadas = useMemo(() => deudas.map((d) => ({ ...d, ...calcularDeuda(d) })), [deudas])
   const activas = calculadas.filter((d) => !d.liquidada)
@@ -124,9 +160,10 @@ export default function Debts() {
   function crearDeuda(e) {
     e.preventDefault()
     if (!nombre.trim() || !Number(monto)) return
-    addDeuda(nombre.trim(), monto)
+    addDeuda(nombre.trim(), monto, comentario.trim())
     setNombre('')
     setMonto('')
+    setComentario('')
   }
 
   return (
@@ -155,6 +192,15 @@ export default function Debts() {
           <div style={{ flex: 1, minWidth: 120 }}>
             <label>Monto total (MXN)</label>
             <input type="number" min="0" value={monto} onChange={(e) => setMonto(e.target.value)} placeholder="0.00" />
+          </div>
+          <div style={{ flexBasis: '100%' }}>
+            <label>Comentario (opcional)</label>
+            <input
+              type="text"
+              value={comentario}
+              onChange={(e) => setComentario(e.target.value)}
+              placeholder="Ej. a 6 meses sin intereses, vence cada día 5..."
+            />
           </div>
           <button type="submit" className="btn primary">Agregar deuda</button>
         </form>

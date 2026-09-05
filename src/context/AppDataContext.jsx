@@ -90,10 +90,10 @@ export function AppDataProvider({ children }) {
     )
   }
 
-  function addDeuda(nombre, montoTotal) {
+  function addDeuda(nombre, montoTotal, comentario = '') {
     setDeudas((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), nombre, montoTotal: Number(montoTotal) || 0, pagos: [] },
+      { id: crypto.randomUUID(), nombre, montoTotal: Number(montoTotal) || 0, comentario, pagos: [] },
     ])
   }
 
