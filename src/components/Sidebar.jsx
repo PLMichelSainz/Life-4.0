@@ -3,7 +3,7 @@ import { useLanguage } from '../context/LanguageContext'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { ICONS } from './NavIcons'
 
-const MODULOS = ['overtime', 'payroll', 'transport', 'wishlist', 'debts', 'salaries', 'budget']
+const MODULOS = ['overtime', 'payroll', 'transport', 'wishlist', 'debts', 'salaries', 'budget', 'products', 'tasks']
 
 export default function Sidebar({ active, onSelect }) {
   const { user, signOut } = useAuth()

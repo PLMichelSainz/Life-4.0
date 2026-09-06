@@ -41,8 +41,19 @@ export function AppDataProvider({ children }) {
   const [cuentas, setCuentas, refetchCuentas] = useCloudState(uid, 'budget.accounts', [])
   // Presupuesto — ingresos: [{ id, concepto, monto }]
   const [ingresos, setIngresos, refetchIngresos] = useCloudState(uid, 'budget.income', [])
-  // Presupuesto — gastos fijos mensuales: [{ id, concepto, monto }]
+  // Presupuesto — gastos fijos mensuales: [{ id, concepto, monto, categoria,
+  // pagos: { [periodoYYYY-MM]: montoPagadoEsePeriodo } }]. `pagos` es nuevo;
+  // los gastos ya existentes sin ese campo simplemente empiezan en 0 pagado.
   const [gastosFijos, setGastosFijos, refetchGastosFijos] = useCloudState(uid, 'budget.fixedExpenses', [])
+
+  // Productos / Reposición — cosas que se consumen y eventualmente hay que
+  // reponer, sin fecha fija: [{ id, nombre, categoria, precio, cantidad,
+  // unidad, dondeComprar, frecuencia, notas, estado: 'tengo'|'necesito' }]
+  const [productos, setProductos, refetchProductos] = useCloudState(uid, 'budget.products', [])
+
+  // Pendientes generales (no necesariamente de dinero):
+  // [{ id, titulo, prioridad: 'alta'|'media'|'baja', estado: 'pendiente'|'completado', categoria, fechaLimite, notas }]
+  const [pendientes, setPendientes, refetchPendientes] = useCloudState(uid, 'budget.tasks', [])
 
   async function syncAll() {
     await Promise.all([
@@ -57,6 +68,8 @@ export function AppDataProvider({ children }) {
       refetchCuentas(),
       refetchIngresos(),
       refetchGastosFijos(),
+      refetchProductos(),
+      refetchPendientes(),
     ])
   }
 
@@ -176,14 +189,85 @@ export function AppDataProvider({ children }) {
     setIngresos((prev) => prev.filter((i) => i.id !== id))
   }
 
-  function addGastoFijo(concepto, monto) {
-    setGastosFijos((prev) => [...prev, { id: crypto.randomUUID(), concepto, monto: Number(monto) || 0 }])
+  function addGastoFijo(concepto, monto, categoria = '') {
+    setGastosFijos((prev) => [...prev, { id: crypto.randomUUID(), concepto, monto: Number(monto) || 0, categoria, pagos: {} }])
   }
   function updateGastoFijo(id, cambios) {
     setGastosFijos((prev) => prev.map((g) => (g.id === id ? { ...g, ...cambios } : g)))
   }
   function removeGastoFijo(id) {
     setGastosFijos((prev) => prev.filter((g) => g.id !== id))
+  }
+  // Registra un pago (se acumula) del gasto fijo en el periodo mensual actual
+  // (YYYY-MM). Al cambiar de mes, el periodo nuevo no existe en `pagos` todavía,
+  // así que "pagado" vuelve a 0 automáticamente sin borrar el historial de meses anteriores.
+  function pagarGastoFijo(id, monto, periodo) {
+    const abono = Number(monto) || 0
+    if (abono <= 0) return
+    setGastosFijos((prev) =>
+      prev.map((g) =>
+        g.id === id
+          ? { ...g, pagos: { ...(g.pagos || {}), [periodo]: ((g.pagos || {})[periodo] || 0) + abono } }
+          : g
+      )
+    )
+  }
+
+  // ---- Productos / Reposición ----
+  function addProducto(datos) {
+    setProductos((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        nombre: datos.nombre,
+        categoria: datos.categoria || '',
+        precio: Number(datos.precio) || 0,
+        cantidad: Number(datos.cantidad) || 1,
+        unidad: datos.unidad || '',
+        dondeComprar: datos.dondeComprar || '',
+        frecuencia: datos.frecuencia || '',
+        notas: datos.notas || '',
+        estado: datos.estado || 'necesito',
+      },
+    ])
+  }
+  function updateProducto(id, cambios) {
+    setProductos((prev) => prev.map((p) => (p.id === id ? { ...p, ...cambios } : p)))
+  }
+  function removeProducto(id) {
+    setProductos((prev) => prev.filter((p) => p.id !== id))
+  }
+  function toggleProductoEstado(id) {
+    setProductos((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, estado: p.estado === 'tengo' ? 'necesito' : 'tengo' } : p))
+    )
+  }
+
+  // ---- Pendientes ----
+  function addPendiente(datos) {
+    setPendientes((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        titulo: datos.titulo,
+        prioridad: datos.prioridad || 'media',
+        estado: 'pendiente',
+        categoria: datos.categoria || '',
+        fechaLimite: datos.fechaLimite || '',
+        notas: datos.notas || '',
+      },
+    ])
+  }
+  function updatePendiente(id, cambios) {
+    setPendientes((prev) => prev.map((p) => (p.id === id ? { ...p, ...cambios } : p)))
+  }
+  function removePendiente(id) {
+    setPendientes((prev) => prev.filter((p) => p.id !== id))
+  }
+  function togglePendienteEstado(id) {
+    setPendientes((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, estado: p.estado === 'completado' ? 'pendiente' : 'completado' } : p))
+    )
   }
 
   const value = {
@@ -225,6 +309,17 @@ export function AppDataProvider({ children }) {
     addGastoFijo,
     updateGastoFijo,
     removeGastoFijo,
+    pagarGastoFijo,
+    productos,
+    addProducto,
+    updateProducto,
+    removeProducto,
+    toggleProductoEstado,
+    pendientes,
+    addPendiente,
+    updatePendiente,
+    removePendiente,
+    togglePendienteEstado,
     syncAll,
   }
 

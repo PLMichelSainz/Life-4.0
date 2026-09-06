@@ -55,3 +55,7 @@ export function formatLong(iso, locale = 'es') {
 export function todayISO() {
   return toISODate(new Date())
 }
+
+export function currentPeriod() {
+  return todayISO().slice(0, 7) // 'YYYY-MM'
+}

@@ -52,4 +52,17 @@ export const ICONS = {
       <path d="M16 14.2a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6z" fill="currentColor" stroke="none" />
     </Base>
   ),
+  products: () => (
+    <Base>
+      <path d="M4 8l1.5-4h13L20 8" />
+      <rect x="4" y="8" width="16" height="12" rx="1.5" />
+      <path d="M9 12a3 3 0 0 0 6 0" />
+    </Base>
+  ),
+  tasks: () => (
+    <Base>
+      <rect x="4" y="4" width="16" height="16" rx="2.5" />
+      <path d="M8 12l2.5 2.5L16 9" />
+    </Base>
+  ),
 }

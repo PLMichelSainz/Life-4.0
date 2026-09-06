@@ -9,6 +9,8 @@ import Wishlist from './modules/Wishlist/Wishlist'
 import Debts from './modules/Debts/Debts'
 import SalaryRates from './modules/Salaries/SalaryRates'
 import Budget from './modules/Budget/Budget'
+import Products from './modules/Products/Products'
+import Tasks from './modules/Tasks/Tasks'
 
 export default function App() {
   const [moduleId, setModuleId] = useState('overtime')
@@ -27,6 +29,8 @@ export default function App() {
           {moduleId === 'debts' && <Debts />}
           {moduleId === 'salaries' && <SalaryRates />}
           {moduleId === 'budget' && <Budget />}
+          {moduleId === 'products' && <Products />}
+          {moduleId === 'tasks' && <Tasks />}
         </main>
         <p className="footer-note">{t('footer')}</p>
       </div>
