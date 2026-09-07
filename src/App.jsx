@@ -1,35 +1,38 @@
 import { useState } from 'react'
 import Sidebar from './components/Sidebar'
 import TopBar from './components/TopBar'
+import { useLanguage } from './context/LanguageContext'
 import OvertimeCalculator from './modules/Overtime/OvertimeCalculator'
 import PayrollCalendar from './modules/Payroll/PayrollCalendar'
 import TransportExpenses from './modules/Transport/TransportExpenses'
 import Wishlist from './modules/Wishlist/Wishlist'
 import Debts from './modules/Debts/Debts'
+import SalaryRates from './modules/Salaries/SalaryRates'
+import Budget from './modules/Budget/Budget'
+import Products from './modules/Products/Products'
+import Tasks from './modules/Tasks/Tasks'
 
 export default function App() {
   const [moduleId, setModuleId] = useState('overtime')
-  const [menuOpen, setMenuOpen] = useState(false)
-
-  const seleccionar = (id) => {
-    setModuleId(id)
-    setMenuOpen(false)
-  }
+  const { t } = useLanguage()
 
   return (
     <div className="app-shell">
-      <Sidebar active={moduleId} onSelect={seleccionar} open={menuOpen} />
-      <div className={`sidebar-backdrop${menuOpen ? ' open' : ''}`} onClick={() => setMenuOpen(false)} />
+      <Sidebar active={moduleId} onSelect={setModuleId} />
       <div className="main-col">
-        <TopBar moduleId={moduleId} onMenuToggle={() => setMenuOpen((o) => !o)} />
+        <TopBar moduleId={moduleId} />
         <main className="content">
           {moduleId === 'overtime' && <OvertimeCalculator />}
           {moduleId === 'payroll' && <PayrollCalendar />}
           {moduleId === 'transport' && <TransportExpenses />}
           {moduleId === 'wishlist' && <Wishlist />}
           {moduleId === 'debts' && <Debts />}
+          {moduleId === 'salaries' && <SalaryRates />}
+          {moduleId === 'budget' && <Budget />}
+          {moduleId === 'products' && <Products />}
+          {moduleId === 'tasks' && <Tasks />}
         </main>
-        <p className="footer-note">Datos guardados localmente en este dispositivo (localStorage).</p>
+        <p className="footer-note">{t('footer')}</p>
       </div>
     </div>
   )
