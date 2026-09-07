@@ -114,9 +114,9 @@ export default function TransportExpenses() {
             <div className="label">{t('transport.missing')}</div>
             <div className="value mono">{formatMXN(falta)}</div>
           </div>
-          <div className="stat" style={{ borderColor: falta > 0 ? 'var(--accent)' : 'var(--border-soft)' }}>
+          <div className="stat">
             <div className="label">{t('transport.amountToTransfer')}</div>
-            <div className={`value mono ${falta > 0 ? 'accent' : ''}`}>{formatMXN(recarga.montoTransferir)}</div>
+            <div className="value mono">{formatMXN(recarga.montoTransferir)}</div>
           </div>
         </div>
 
@@ -126,9 +126,9 @@ export default function TransportExpenses() {
               <div className="label">{t('transport.commission')((COMISION_PCT * 100).toFixed(0))}</div>
               <div className="value mono">{formatMXN(recarga.comision)}</div>
             </div>
-            <div className="stat">
+            <div className="stat" style={{ borderColor: 'var(--accent)' }}>
               <div className="label">{t('transport.leftAfterCommission')}</div>
-              <div className="value mono">{formatMXN(recarga.quedaRecargado)}</div>
+              <div className="value accent mono">{formatMXN(recarga.quedaRecargado)}</div>
             </div>
           </div>
         )}
