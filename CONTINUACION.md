@@ -33,53 +33,6 @@ Quiero que continúes con lo siguiente, en este orden:
 6. (Opcional) Evaluar si vale la pena migrar de localStorage a Vercel KV /
    Supabase si el usuario necesita sincronizar datos entre dispositivos.
 
----
-
-## Pendiente adicional (se perdió por corte de sesión, nunca se entregó en un zip)
-
-Copia y pega esto en una nueva ventana para retomarlo:
-
----
-
-Tengo el proyecto "finanzas-app" (adjunto/subido) con los módulos Horas extra,
-Catorcenas, Transporte, Wishlist y Deudas funcionando, incluyendo la
-calculadora de recarga de tarjeta con comisión y el bloqueo/reseteo de días
-pasados en Transporte. Necesito que retomes dos cosas que se habían empezado
-antes pero se perdieron por un corte de sesión (nunca llegaron a
-entregarse en un zip):
-
-1. **Navegación por catorcenas futuras en el módulo de Transporte**: hoy el
-   módulo de Transporte (`src/modules/Transport/TransportExpenses.jsx`) solo
-   muestra la catorcena actual (`catorcenaDe(hoy)`), sin poder avanzar a
-   catorcenas futuras. Agrega botones "Catorcena anterior" / "Siguiente"
-   igual que ya existen en `src/modules/Overtime/OvertimeCalculator.jsx`
-   (usa `catorcenaPorIndice` e `indiceCatorcena` de `src/utils/payroll.js`
-   como referencia de cómo se hizo ahí). Importante: al navegar a una
-   catorcena distinta a la actual, el bloqueo/reseteo de "día ya
-   transcurrido a 0" debe seguir aplicando solo a días anteriores a HOY
-   (no a todos los días de una catorcena futura, que no han pasado).
-
-2. **Sincronización en la nube con Supabase, usando un PIN personal (sin
-   cuentas)**: para que los datos de mi PC y mi celular sean los mismos.
-   Quiero: instalar `@supabase/supabase-js`, un cliente en
-   `src/utils/supabaseClient.js` que lea `VITE_SUPABASE_URL` y
-   `VITE_SUPABASE_ANON_KEY` desde variables de entorno de Vite (si no están
-   configuradas, la app debe seguir funcionando 100% local con
-   localStorage, sin romperse). Un nuevo módulo "Sincronización" en el
-   sidebar donde pueda escribir un PIN y conectar mi dispositivo: al
-   conectar, si ya hay datos guardados en la nube con ese PIN, se
-   descargan y reemplazan los locales; si no hay, se sube lo que tengo
-   localmente. Después de conectado, cualquier cambio en horas, transporte,
-   wishlist, deudas o saldo de tarjeta debe subirse solo (con un pequeño
-   retraso tipo debounce) a una tabla de Supabase. Incluye también:
-   - Un archivo `SUPABASE_SETUP.md` con instrucciones paso a paso para
-     crear la cuenta/proyecto en Supabase, crear la tabla con SQL, y
-     configurar las variables de entorno tanto en local (`.env.local`)
-     como en Vercel.
-   - Un `.env.example` con las dos variables vacías.
-   - Actualiza `.gitignore` para que `.env.local` nunca se suba a GitHub.
-
-Por favor lee primero el código actual del proyecto (no lo reescribas
-completo) y ve aplicando los cambios de forma incremental, verificando con
-`npm run build` que todo compile antes de entregarme el zip final.
-
+Todos los archivos fuente están en `src/`. La lógica de negocio está aislada
+en `src/utils/` para que sea fácil de probar y ajustar sin tocar los
+componentes de UI.

@@ -1,26 +1,25 @@
 import { useState, useMemo } from 'react'
 import { useAppData } from '../../context/AppDataContext'
-import { addDays, formatShort, formatLong, todayISO } from '../../utils/dates'
+import { useLanguage } from '../../context/LanguageContext'
+import { addDays, formatShort, formatLong, dayName, todayISO } from '../../utils/dates'
 import { calcularSemana, formatMXN, LIMITE_LEGAL_SEMANAL } from '../../utils/overtime'
 import { indiceCatorcena, catorcenaPorIndice } from '../../utils/payroll'
 
-const NOMBRES_DIA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-
-function BloqueSemana({ titulo, weekStart, horas, onChange, resultado }) {
+function BloqueSemana({ titulo, weekStart, horas, onChange, resultado, lang, t }) {
   return (
     <div className="card">
       <p className="card-title">{titulo}</p>
       <p className="card-sub">
-        {formatShort(weekStart)} – {formatShort(addDays(weekStart, 6))} · jornada ordinaria de referencia: {resultado.jornadaOrdinaria} hrs
+        {formatShort(weekStart, lang)} – {formatShort(addDays(weekStart, 6), lang)} · {t('overtime.referenceShift')}: {resultado.jornadaOrdinaria} {t('overtime.hrs')}
       </p>
 
-      {NOMBRES_DIA.map((nombre, i) => {
+      {[0, 1, 2, 3, 4, 5, 6].map((i) => {
         const fecha = addDays(weekStart, i)
         return (
           <div className="day-row" key={fecha}>
             <div>
-              <div className="day-name">{nombre}</div>
-              <div className="day-date">{formatShort(fecha)}</div>
+              <div className="day-name">{dayName(fecha, false, lang)}</div>
+              <div className="day-date">{formatShort(fecha, lang)}</div>
             </div>
             <input
               type="number"
@@ -38,31 +37,31 @@ function BloqueSemana({ titulo, weekStart, horas, onChange, resultado }) {
 
       <div className="grid cols-3" style={{ marginTop: 14 }}>
         <div className="stat">
-          <div className="label">Ordinarias ({LIMITE_LEGAL_SEMANAL} hrs tope)</div>
-          <div className="value mono">{resultado.ordinarias} hrs</div>
+          <div className="label">{t('overtime.ordinary')(LIMITE_LEGAL_SEMANAL)}</div>
+          <div className="value mono">{resultado.ordinarias} {t('overtime.hrs')}</div>
           <div className="label mono">{formatMXN(resultado.pagoOrdinario)}</div>
         </div>
         <div className="stat">
-          <div className="label">Doble (49–57)</div>
-          <div className="value mono accent">{resultado.extraDoble} hrs</div>
+          <div className="label">{t('overtime.double')}</div>
+          <div className="value mono accent">{resultado.extraDoble} {t('overtime.hrs')}</div>
           <div className="label mono">{formatMXN(resultado.pagoDoble)}</div>
         </div>
         <div className="stat">
-          <div className="label">Triple (58–60)</div>
-          <div className="value mono accent">{resultado.extraTriple} hrs</div>
+          <div className="label">{t('overtime.triple')}</div>
+          <div className="value mono accent">{resultado.extraTriple} {t('overtime.hrs')}</div>
           <div className="label mono">{formatMXN(resultado.pagoTriple)}</div>
         </div>
       </div>
 
       {resultado.excedeLimiteLegal && (
         <div className="stat" style={{ marginTop: 14, borderColor: 'var(--danger)' }}>
-          <div className="label">Excedente sobre el límite legal (&gt;60 hrs esta semana)</div>
-          <div className="value warn mono">{resultado.excedente} hrs · {formatMXN(resultado.pagoExcedente)}</div>
+          <div className="label">{t('overtime.excess')}</div>
+          <div className="value warn mono">{resultado.excedente} {t('overtime.hrs')} · {formatMXN(resultado.pagoExcedente)}</div>
         </div>
       )}
 
       <div className="stat" style={{ marginTop: 14, background: 'transparent', border: '1px solid var(--accent)' }}>
-        <div className="label">Total de la semana</div>
+        <div className="label">{t('overtime.weekTotal')}</div>
         <div className="value accent mono" style={{ fontSize: '1.3rem' }}>{formatMXN(resultado.total_pago)}</div>
       </div>
     </div>
@@ -71,6 +70,7 @@ function BloqueSemana({ titulo, weekStart, horas, onChange, resultado }) {
 
 export default function OvertimeCalculator() {
   const { horasPorSemana, setHorasDia } = useAppData()
+  const { t, lang } = useLanguage()
   const hoy = todayISO()
   const [indice, setIndice] = useState(indiceCatorcena(hoy))
 
@@ -90,40 +90,44 @@ export default function OvertimeCalculator() {
   return (
     <div>
       <div className="card ticket" style={{ borderColor: 'var(--accent)' }}>
-        <p className="pill current">{catorcena.index === indiceCatorcena(hoy) ? 'Catorcena en curso' : 'Catorcena'}</p>
+        <p className="pill current">{catorcena.index === indiceCatorcena(hoy) ? t('overtime.currentBiweek') : t('overtime.biweek')}</p>
         <h2 className="display" style={{ margin: '10px 0 2px' }}>
-          {formatShort(catorcena.start)} – {formatShort(catorcena.end)}
+          {formatShort(catorcena.start, lang)} – {formatShort(catorcena.end, lang)}
         </h2>
-        <p className="card-sub" style={{ marginBottom: 14 }}>Se paga el {formatLong(catorcena.payDate)}</p>
+        <p className="card-sub" style={{ marginBottom: 14 }}>{t('overtime.paidOn')} {formatLong(catorcena.payDate, lang)}</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button className="btn" onClick={() => setIndice((k) => k - 1)}>‹ Catorcena anterior</button>
+          <button className="btn" onClick={() => setIndice((k) => k - 1)}>{t('overtime.prevBiweek')}</button>
           <div className="grid cols-2" style={{ flex: 1 }}>
             <div className="stat">
-              <div className="label">Horas totales</div>
-              <div className="value mono">{totalHoras} hrs</div>
+              <div className="label">{t('overtime.totalHours')}</div>
+              <div className="value mono">{totalHoras} {t('overtime.hrs')}</div>
             </div>
             <div className="stat" style={{ borderColor: 'var(--accent)' }}>
-              <div className="label">Total a pagar (catorcena)</div>
+              <div className="label">{t('overtime.totalToPay')}</div>
               <div className="value accent mono">{formatMXN(totalCatorcena)}</div>
             </div>
           </div>
-          <button className="btn" onClick={() => setIndice((k) => k + 1)}>Siguiente ›</button>
+          <button className="btn" onClick={() => setIndice((k) => k + 1)}>{t('overtime.nextBiweek')}</button>
         </div>
       </div>
 
       <BloqueSemana
-        titulo="Semana 1"
+        titulo={t('overtime.week1')}
         weekStart={week1Start}
         horas={horas1}
         resultado={resultado1}
         onChange={(i, v) => setHorasDia(week1Start, i, v)}
+        lang={lang}
+        t={t}
       />
       <BloqueSemana
-        titulo="Semana 2"
+        titulo={t('overtime.week2')}
         weekStart={week2Start}
         horas={horas2}
         resultado={resultado2}
         onChange={(i, v) => setHorasDia(week2Start, i, v)}
+        lang={lang}
+        t={t}
       />
     </div>
   )
