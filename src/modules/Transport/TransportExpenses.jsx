@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useAppData } from '../../context/AppDataContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { catorcenaDe, diasDeCatorcena, esViernesDePago } from '../../utils/payroll'
@@ -31,6 +31,20 @@ export default function TransportExpenses() {
 
   const catorcena = useMemo(() => catorcenaDe(hoy), [hoy])
   const dias = useMemo(() => diasDeCatorcena(catorcena.start), [catorcena.start])
+
+  // Cuando un día ya transcurrió, se guarda (persiste) en 0 de verdad, no solo
+  // se muestra en 0. Así el dato queda "bloqueado en 0" en la nube/local aunque
+  // ese día se hubiera capturado algo antes de terminar.
+  useEffect(() => {
+    dias.forEach((fecha) => {
+      if (fecha >= hoy) return
+      const registro = transporte[fecha]
+      if (!registro) return
+      if ((Number(registro.normal) || 0) !== 0) setTransporteDia(fecha, 'normal', 0)
+      if ((Number(registro.transbordo) || 0) !== 0) setTransporteDia(fecha, 'transbordo', 0)
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dias, hoy, transporte])
 
   const totales = dias.reduce(
     (acc, fecha) => {
