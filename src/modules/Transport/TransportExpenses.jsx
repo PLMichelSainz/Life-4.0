@@ -9,14 +9,14 @@ const TARIFA_NORMAL = 11.0
 const TARIFA_TRANSBORDO = 5.5
 const COMISION_PCT = 0.03
 
-// Valor "efectivo" de un día: si el usuario ya lo editó a mano, se respeta tal
-// cual (incluyendo si lo dejó en 0). Si no lo ha tocado: hoy y días futuros
-// muestran el default configurado (para no tener que capturarlo todos los
-// días); los días que ya pasaron sin haberse registrado se cuentan como 0
-// para no inflar el gasto con viajes que no se confirmaron.
+// Valor "efectivo" de un día: los días futuros u hoy respetan lo que el
+// usuario capturó (o el default configurado si no lo ha tocado). Un día que
+// YA TRANSCURRIÓ siempre se muestra y se cuenta como 0, sin importar si se
+// había capturado algo antes de que terminara, para no seguir inflando el
+// total ni el cálculo de recarga con días que ya pasaron.
 function valorEfectivoDia(registroExplicito, campo, hoy, fecha, defaults) {
-  if (registroExplicito) return Number(registroExplicito[campo]) || 0
   if (fecha < hoy) return 0
+  if (registroExplicito) return Number(registroExplicito[campo]) || 0
   return Number(defaults[campo]) || 0
 }
 
