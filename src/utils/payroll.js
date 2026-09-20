@@ -44,6 +44,31 @@ export function esViernesDePago(iso) {
   return diffDias % 14 === 0
 }
 
+// --- Periodo de presupuesto para Transporte: ligado directamente al día de
+// pago (a diferencia del periodo "trabajado" de arriba, usado en Horas
+// extra y en el módulo de Catorcenas). Aquí el primer día de la catorcena
+// ES el viernes de pago, y el último día es justo antes del siguiente pago.
+// Referencia confirmada: viernes 11/sep/2026 fue día de pago real.
+export const ANCHOR_PAGO_TRANSPORTE = '2026-09-11'
+
+export function indiceCatorcenaPago(iso) {
+  const inicio = parseISODate(ANCHOR_PAGO_TRANSPORTE)
+  const dia = parseISODate(iso)
+  const diffDias = Math.round((dia - inicio) / 86400000)
+  return Math.floor(diffDias / 14)
+}
+
+export function catorcenaPagoPorIndice(k) {
+  const start = addDays(ANCHOR_PAGO_TRANSPORTE, 14 * k)
+  const end = addDays(start, 13)
+  const siguientePago = addDays(start, 14)
+  return { index: k, start, end, payDate: start, siguientePago }
+}
+
+export function catorcenaPagoDe(iso) {
+  return catorcenaPagoPorIndice(indiceCatorcenaPago(iso))
+}
+
 /** Genera una lista de catorcenas alrededor de la actual: [antes..actual..despues]. */
 export function listaCatorcenas(iso, antes = 2, despues = 3) {
   const actual = indiceCatorcena(iso)

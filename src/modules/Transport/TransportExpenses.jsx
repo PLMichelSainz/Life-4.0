@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAppData } from '../../context/AppDataContext'
 import { useLanguage } from '../../context/LanguageContext'
-import { catorcenaDe, diasDeCatorcena, esViernesDePago } from '../../utils/payroll'
+import { catorcenaPagoPorIndice, indiceCatorcenaPago, diasDeCatorcena, esViernesDePago } from '../../utils/payroll'
 import { todayISO, formatShort, dayName } from '../../utils/dates'
 import { formatMXN, calcularRecarga } from '../../utils/overtime'
 
@@ -25,14 +25,13 @@ export default function TransportExpenses() {
     useAppData()
   const { t, lang } = useLanguage()
   const hoy = todayISO()
-
-  // eslint-disable-next-line no-console
-  console.log('[TransportExpenses] version-check-2026-09-20b, hoy=', hoy)
+  const [indice, setIndice] = useState(indiceCatorcenaPago(hoy))
 
   const [defNormal, setDefNormal] = useState(String(transporteDefault.normal))
   const [defTransbordo, setDefTransbordo] = useState(String(transporteDefault.transbordo))
 
-  const catorcena = useMemo(() => catorcenaDe(hoy), [hoy])
+  const catorcena = useMemo(() => catorcenaPagoPorIndice(indice), [indice])
+  const esActual = catorcena.index === indiceCatorcenaPago(hoy)
   const dias = useMemo(() => diasDeCatorcena(catorcena.start), [catorcena.start])
 
   // Cuando un día ya transcurrió, se guarda (persiste) en 0 de verdad, no solo
@@ -74,10 +73,18 @@ export default function TransportExpenses() {
   return (
     <div>
       <div className="card">
-        <p className="card-title">{t('transport.accumulated')}</p>
-        <p className="card-sub">
-          {formatShort(catorcena.start, lang)} – {formatShort(catorcena.end, lang)} · {t('transport.paidOn')} {formatShort(catorcena.payDate, lang)}
+        <p className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {t('transport.accumulated')}
+          <span className="pill current">{esActual ? t('overtime.currentBiweek') : t('overtime.biweek')}</span>
         </p>
+        <p className="card-sub">
+          {formatShort(catorcena.start, lang)} – {formatShort(catorcena.end, lang)} · {t('transport.paidOn')} {formatShort(catorcena.start, lang)} · próximo pago: {formatShort(catorcena.siguientePago, lang)}
+        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+          <button className="btn" onClick={() => setIndice((k) => k - 1)}>{t('overtime.prevBiweek')}</button>
+          <div style={{ flex: 1 }} />
+          <button className="btn" onClick={() => setIndice((k) => k + 1)}>{t('overtime.nextBiweek')}</button>
+        </div>
         <div className="grid cols-3">
           <div className="stat">
             <div className="label">{t('transport.normalBus')(formatMXN(TARIFA_NORMAL))}</div>
@@ -178,11 +185,6 @@ export default function TransportExpenses() {
                       {t('common.payday')}
                     </span>
                   )}
-                  {bloqueado && registro && (Number(registro.normal) || Number(registro.transbordo)) ? (
-                    <span style={{ marginLeft: 8, fontSize: '0.65rem', color: 'var(--danger)' }}>
-                      (guardado: {registro.normal ?? 0}/{registro.transbordo ?? 0})
-                    </span>
-                  ) : null}
                 </div>
                 <div className="day-date">{formatShort(fecha, lang)}</div>
               </div>
