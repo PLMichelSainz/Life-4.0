@@ -26,6 +26,9 @@ export default function TransportExpenses() {
   const { t, lang } = useLanguage()
   const hoy = todayISO()
 
+  // eslint-disable-next-line no-console
+  console.log('[TransportExpenses] version-check-2026-09-20b, hoy=', hoy)
+
   const [defNormal, setDefNormal] = useState(String(transporteDefault.normal))
   const [defTransbordo, setDefTransbordo] = useState(String(transporteDefault.transbordo))
 
@@ -160,8 +163,8 @@ export default function TransportExpenses() {
         {dias.map((fecha) => {
           const bloqueado = fecha < hoy
           const registro = transporte[fecha]
-          const normalMostrado = valorEfectivoDia(registro, 'normal', hoy, fecha, transporteDefault)
-          const transbordoMostrado = valorEfectivoDia(registro, 'transbordo', hoy, fecha, transporteDefault)
+          const normalMostrado = bloqueado ? 0 : valorEfectivoDia(registro, 'normal', hoy, fecha, transporteDefault)
+          const transbordoMostrado = bloqueado ? 0 : valorEfectivoDia(registro, 'transbordo', hoy, fecha, transporteDefault)
           const esHoy = fecha === hoy
           const esPago = esViernesDePago(fecha)
           return (
@@ -175,6 +178,11 @@ export default function TransportExpenses() {
                       {t('common.payday')}
                     </span>
                   )}
+                  {bloqueado && registro && (Number(registro.normal) || Number(registro.transbordo)) ? (
+                    <span style={{ marginLeft: 8, fontSize: '0.65rem', color: 'var(--danger)' }}>
+                      (guardado: {registro.normal ?? 0}/{registro.transbordo ?? 0})
+                    </span>
+                  ) : null}
                 </div>
                 <div className="day-date">{formatShort(fecha, lang)}</div>
               </div>
