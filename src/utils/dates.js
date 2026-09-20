@@ -1,5 +1,3 @@
-import { translations } from '../i18n/translations'
-
 export const DAY_MS = 24 * 60 * 60 * 1000
 
 export function toISODate(date) {
@@ -27,35 +25,25 @@ export function startOfWeekMonday(iso) {
   return toISODate(d)
 }
 
-function dict(locale) {
-  return translations[locale] || translations.es
+const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+const DIAS_CORTO = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+
+export function dayName(iso, short = false) {
+  const d = parseISODate(iso)
+  return (short ? DIAS_CORTO : DIAS)[d.getDay()]
 }
 
-export function dayName(iso, short = false, locale = 'es') {
+export function formatShort(iso) {
   const d = parseISODate(iso)
-  const { full, short: shortArr } = dict(locale).days
-  return (short ? shortArr : full)[d.getDay()]
+  return `${String(d.getDate()).padStart(2, '0')} ${MESES[d.getMonth()]}`
 }
 
-export function formatShort(iso, locale = 'es') {
+export function formatLong(iso) {
   const d = parseISODate(iso)
-  const meses = dict(locale).months
-  return `${String(d.getDate()).padStart(2, '0')} ${meses[d.getMonth()]}`
-}
-
-export function formatLong(iso, locale = 'es') {
-  const d = parseISODate(iso)
-  const meses = dict(locale).months
-  if (locale === 'en') {
-    return `${dayName(iso, false, locale)}, ${meses[d.getMonth()]} ${String(d.getDate()).padStart(2, '0')}, ${d.getFullYear()}`
-  }
-  return `${dayName(iso, false, locale)} ${String(d.getDate()).padStart(2, '0')} de ${meses[d.getMonth()]} de ${d.getFullYear()}`
+  return `${dayName(iso)} ${String(d.getDate()).padStart(2, '0')} de ${MESES[d.getMonth()]} de ${d.getFullYear()}`
 }
 
 export function todayISO() {
   return toISODate(new Date())
-}
-
-export function currentPeriod() {
-  return todayISO().slice(0, 7) // 'YYYY-MM'
 }

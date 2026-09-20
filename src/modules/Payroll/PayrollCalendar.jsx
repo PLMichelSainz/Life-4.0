@@ -1,10 +1,8 @@
 import { useMemo } from 'react'
 import { listaCatorcenas } from '../../utils/payroll'
-import { useLanguage } from '../../context/LanguageContext'
 import { todayISO, formatShort, formatLong } from '../../utils/dates'
 
 export default function PayrollCalendar() {
-  const { t, lang } = useLanguage()
   const hoy = todayISO()
   const catorcenas = useMemo(() => listaCatorcenas(hoy, 2, 4), [hoy])
   const actual = catorcenas.find((c) => c.esActual)
@@ -12,26 +10,29 @@ export default function PayrollCalendar() {
   return (
     <div>
       <div className="card ticket" style={{ borderColor: 'var(--accent)' }}>
-        <p className="pill current">{t('payroll.currentBiweek')}</p>
+        <p className="pill current">Catorcena en curso</p>
         <h2 className="display" style={{ margin: '10px 0 2px' }}>
-          {formatShort(actual.start, lang)} – {formatShort(actual.end, lang)}
+          {formatShort(actual.start)} – {formatShort(actual.end)}
         </h2>
         <p className="card-sub" style={{ marginBottom: 0 }}>
-          {t('payroll.payDay')} <b>{formatLong(actual.payDate, lang)}</b>
+          Día de pago: <b>{formatLong(actual.payDate)}</b>
         </p>
       </div>
 
       <div className="card">
-        <p className="card-title">{t('payroll.upcoming')}</p>
-        <p className="card-sub">{t('payroll.description')}</p>
+        <p className="card-title">Próximas y anteriores catorcenas</p>
+        <p className="card-sub">
+          Periodo trabajado de 14 días (lunes a domingo); el pago cae 5 días después de terminado el periodo.
+          Referencia: periodo 27/jul–09/ago/2026, pagado el 14/ago/2026.
+        </p>
         {catorcenas.map((c) => (
           <div className="day-row" key={c.index}>
             <div>
               <div className="day-name">
-                {formatShort(c.start, lang)} – {formatShort(c.end, lang)}
-                {c.esActual && <span className="pill current" style={{ marginLeft: 8 }}>{t('common.current')}</span>}
+                {formatShort(c.start)} – {formatShort(c.end)}
+                {c.esActual && <span className="pill current" style={{ marginLeft: 8 }}>actual</span>}
               </div>
-              <div className="day-date">{t('payroll.pay')} {formatLong(c.payDate, lang)}</div>
+              <div className="day-date">Pago: {formatLong(c.payDate)}</div>
             </div>
             <span className="pill mono">#{c.index}</span>
           </div>

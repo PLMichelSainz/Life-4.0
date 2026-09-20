@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react'
 import { useAppData } from '../../context/AppDataContext'
-import { useLanguage } from '../../context/LanguageContext'
 import { formatMXN } from '../../utils/overtime'
 import { formatShort, todayISO } from '../../utils/dates'
 
@@ -12,15 +11,11 @@ function calcularDeuda(deuda) {
   return { pagado, pendiente, liquidada, avance }
 }
 
-function TarjetaDeuda({ deuda, t, lang }) {
-  const { addPagoDeuda, removePagoDeuda, removeDeuda, updateDeuda } = useAppData()
+function TarjetaDeuda({ deuda }) {
+  const { addPagoDeuda, removePagoDeuda, removeDeuda } = useAppData()
   const [montoPago, setMontoPago] = useState('')
   const [fechaPago, setFechaPago] = useState(todayISO())
   const [verHistorial, setVerHistorial] = useState(false)
-  const [editando, setEditando] = useState(false)
-  const [nombre, setNombre] = useState(deuda.nombre)
-  const [montoTotal, setMontoTotal] = useState(String(deuda.montoTotal))
-  const [comentario, setComentario] = useState(deuda.comentario || '')
 
   const { pagado, pendiente, liquidada, avance } = useMemo(() => calcularDeuda(deuda), [deuda])
 
@@ -32,49 +27,18 @@ function TarjetaDeuda({ deuda, t, lang }) {
     setMontoPago('')
   }
 
-  function guardarEdicion(e) {
-    e.preventDefault()
-    if (!nombre.trim()) return
-    updateDeuda(deuda.id, { nombre: nombre.trim(), montoTotal: Number(montoTotal) || 0, comentario: comentario.trim() })
-    setEditando(false)
-  }
-
   return (
     <div className="card" style={liquidada ? { opacity: 0.75 } : undefined}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
         <div>
           <p className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {deuda.nombre}
-            {liquidada && <span className="pill current">{t('debts.settledPill')}</span>}
+            {liquidada && <span className="pill current">liquidada</span>}
           </p>
-          <p className="card-sub" style={{ marginBottom: 0 }}>
-            {t('debts.totalLabel')} {formatMXN(deuda.montoTotal)}
-            {deuda.comentario ? ` · ${deuda.comentario}` : ''}
-          </p>
+          <p className="card-sub" style={{ marginBottom: 0 }}>Monto total: {formatMXN(deuda.montoTotal)}</p>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn" onClick={() => setEditando((v) => !v)}>{editando ? t('common.close') : t('common.edit')}</button>
-          <button className="btn danger" onClick={() => removeDeuda(deuda.id)}>{t('common.delete')}</button>
-        </div>
+        <button className="btn danger" onClick={() => removeDeuda(deuda.id)}>Eliminar</button>
       </div>
-
-      {editando && (
-        <form onSubmit={guardarEdicion} style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 12 }}>
-          <div style={{ flex: 2, minWidth: 160 }}>
-            <label>{t('common.name')}</label>
-            <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} />
-          </div>
-          <div style={{ flex: 1, minWidth: 110 }}>
-            <label>{t('debts.totalAmount')}</label>
-            <input type="number" min="0" value={montoTotal} onChange={(e) => setMontoTotal(e.target.value)} />
-          </div>
-          <div style={{ flexBasis: '100%' }}>
-            <label>{t('common.comment')}</label>
-            <input type="text" value={comentario} onChange={(e) => setComentario(e.target.value)} />
-          </div>
-          <button type="submit" className="btn primary">{t('common.saveChanges')}</button>
-        </form>
-      )}
 
       <div style={{ margin: '12px 0' }}>
         <div style={{ height: 8, borderRadius: 999, background: 'var(--surface-3)', overflow: 'hidden', boxShadow: 'var(--shadow-inset)' }}>
@@ -87,20 +51,20 @@ function TarjetaDeuda({ deuda, t, lang }) {
             }}
           />
         </div>
-        <div className="card-sub" style={{ marginTop: 6, marginBottom: 0 }}>{avance}{t('debts.paidPct')}</div>
+        <div className="card-sub" style={{ marginTop: 6, marginBottom: 0 }}>{avance}% pagado</div>
       </div>
 
       <div className="grid cols-3">
         <div className="stat">
-          <div className="label">{t('debts.paid')}</div>
+          <div className="label">Pagado</div>
           <div className="value mono">{formatMXN(pagado)}</div>
         </div>
         <div className="stat" style={{ borderColor: liquidada ? 'var(--online)' : 'var(--accent)' }}>
-          <div className="label">{t('debts.remaining')}</div>
+          <div className="label">Pendiente</div>
           <div className={`value mono ${liquidada ? '' : 'accent'}`}>{formatMXN(pendiente)}</div>
         </div>
         <div className="stat">
-          <div className="label">{t('debts.paymentsCount')}</div>
+          <div className="label">Pagos registrados</div>
           <div className="value mono">{deuda.pagos.length}</div>
         </div>
       </div>
@@ -108,21 +72,21 @@ function TarjetaDeuda({ deuda, t, lang }) {
       {!liquidada && (
         <form onSubmit={registrarPago} style={{ display: 'flex', gap: 8, alignItems: 'flex-end', marginTop: 14, flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: 110 }}>
-            <label>{t('debts.paymentAmount')}</label>
+            <label>Monto del pago</label>
             <input type="number" min="0" value={montoPago} onChange={(e) => setMontoPago(e.target.value)} placeholder="0.00" />
           </div>
           <div style={{ flex: 1, minWidth: 130 }}>
-            <label>{t('common.date')}</label>
+            <label>Fecha</label>
             <input type="date" value={fechaPago} onChange={(e) => setFechaPago(e.target.value)} />
           </div>
-          <button type="submit" className="btn primary">{t('debts.addPayment')}</button>
+          <button type="submit" className="btn primary">Agregar pago</button>
         </form>
       )}
 
       {deuda.pagos.length > 0 && (
         <div style={{ marginTop: 12 }}>
           <button className="btn" onClick={() => setVerHistorial((v) => !v)}>
-            {verHistorial ? t('debts.hideHistory') : t('debts.viewHistory')(deuda.pagos.length)}
+            {verHistorial ? 'Ocultar historial' : `Ver historial (${deuda.pagos.length})`}
           </button>
           {verHistorial && (
             <div style={{ marginTop: 8 }}>
@@ -132,9 +96,9 @@ function TarjetaDeuda({ deuda, t, lang }) {
                   <div className="day-row" key={p.id}>
                     <div>
                       <div className="day-name mono">{formatMXN(p.monto)}</div>
-                      <div className="day-date">{formatShort(p.fecha, lang)}</div>
+                      <div className="day-date">{formatShort(p.fecha)}</div>
                     </div>
-                    <button className="btn danger" onClick={() => removePagoDeuda(deuda.id, p.id)}>{t('common.remove')}</button>
+                    <button className="btn danger" onClick={() => removePagoDeuda(deuda.id, p.id)}>Quitar</button>
                   </div>
                 ))}
             </div>
@@ -147,10 +111,8 @@ function TarjetaDeuda({ deuda, t, lang }) {
 
 export default function Debts() {
   const { deudas, addDeuda } = useAppData()
-  const { t, lang } = useLanguage()
   const [nombre, setNombre] = useState('')
   const [monto, setMonto] = useState('')
-  const [comentario, setComentario] = useState('')
 
   const calculadas = useMemo(() => deudas.map((d) => ({ ...d, ...calcularDeuda(d) })), [deudas])
   const activas = calculadas.filter((d) => !d.liquidada)
@@ -162,62 +124,52 @@ export default function Debts() {
   function crearDeuda(e) {
     e.preventDefault()
     if (!nombre.trim() || !Number(monto)) return
-    addDeuda(nombre.trim(), monto, comentario.trim())
+    addDeuda(nombre.trim(), monto)
     setNombre('')
     setMonto('')
-    setComentario('')
   }
 
   return (
     <div>
       <div className="card">
-        <p className="card-title">{t('debts.globalSummary')}</p>
+        <p className="card-title">Resumen global</p>
         <div className="grid cols-2">
           <div className="stat">
-            <div className="label">{t('debts.totalPaid')}</div>
+            <div className="label">Total pagado acumulado</div>
             <div className="value mono">{formatMXN(totalPagadoGlobal)}</div>
           </div>
           <div className="stat" style={{ borderColor: 'var(--accent)' }}>
-            <div className="label">{t('debts.totalPending')}</div>
+            <div className="label">Total pendiente</div>
             <div className="value accent mono">{formatMXN(totalPendienteGlobal)}</div>
           </div>
         </div>
       </div>
 
       <div className="card">
-        <p className="card-title">{t('debts.addDebt')}</p>
+        <p className="card-title">Agregar nueva deuda</p>
         <form onSubmit={crearDeuda} style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
           <div style={{ flex: 2, minWidth: 160 }}>
-            <label>{t('common.name')}</label>
-            <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder={t('debts.namePlaceholder')} />
+            <label>Nombre</label>
+            <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej. Tarjeta BBVA" />
           </div>
           <div style={{ flex: 1, minWidth: 120 }}>
-            <label>{t('debts.totalAmount')}</label>
+            <label>Monto total (MXN)</label>
             <input type="number" min="0" value={monto} onChange={(e) => setMonto(e.target.value)} placeholder="0.00" />
           </div>
-          <div style={{ flexBasis: '100%' }}>
-            <label>{t('common.comment')}</label>
-            <input
-              type="text"
-              value={comentario}
-              onChange={(e) => setComentario(e.target.value)}
-              placeholder={t('debts.commentPlaceholder')}
-            />
-          </div>
-          <button type="submit" className="btn primary">{t('debts.addDebtBtn')}</button>
+          <button type="submit" className="btn primary">Agregar deuda</button>
         </form>
       </div>
 
       {activas.length === 0 && liquidadas.length === 0 && (
-        <div className="card"><p className="empty">{t('debts.empty')}</p></div>
+        <div className="card"><p className="empty">Aún no registras ninguna deuda.</p></div>
       )}
 
-      {activas.map((d) => <TarjetaDeuda key={d.id} deuda={d} t={t} lang={lang} />)}
+      {activas.map((d) => <TarjetaDeuda key={d.id} deuda={d} />)}
 
       {liquidadas.length > 0 && (
         <>
-          <p className="card-sub" style={{ margin: '18px 4px 8px' }}>{t('debts.settled')}</p>
-          {liquidadas.map((d) => <TarjetaDeuda key={d.id} deuda={d} t={t} lang={lang} />)}
+          <p className="card-sub" style={{ margin: '18px 4px 8px' }}>Liquidadas</p>
+          {liquidadas.map((d) => <TarjetaDeuda key={d.id} deuda={d} />)}
         </>
       )}
     </div>

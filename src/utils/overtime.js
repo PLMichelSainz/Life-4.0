@@ -70,21 +70,20 @@ export function formatMXN(n) {
 }
 
 /**
- * Calcula cuánto depositar a una tarjeta que cobra comisión por recarga,
- * de modo que, después de descontar la comisión, quede exactamente
- * cubierto (o ligeramente por encima, por el redondeo a centavos) el
- * monto faltante.
+ * Calcula cuánto depositar a una tarjeta que cobra comisión por recarga.
+ * El monto faltante siempre se redondea hacia arriba a pesos completos
+ * (nunca se pide cubrir "de menos"), y el monto a transferir se calcula
+ * con centavos exactos para que, después de la comisión, la tarjeta quede
+ * recargada con el faltante redondeado (o una fracción de centavo arriba,
+ * nunca por debajo).
  */
 export function calcularRecarga(falta, comisionPct = 0.03) {
   if (falta <= 0) {
-    return { falta: 0, montoTransferir: 0, comision: 0, quedaRecargado: 0 }
+    return { falta: 0, faltaRedondeada: 0, montoTransferir: 0, comision: 0, quedaRecargado: 0 }
   }
-  // "Quedará recargado" es la cifra cerrada (sin centavos): se redondea
-  // hacia arriba para asegurar que cubra lo que falta. El monto a transferir
-  // sí puede llevar centavos, ya que es lo que hay que enviar para que,
-  // después de descontar la comisión, quede exactamente ese entero recargado.
-  const quedaRecargado = Math.ceil(falta)
-  const montoTransferir = Math.round((quedaRecargado / (1 - comisionPct)) * 100) / 100
-  const comision = Math.round((montoTransferir - quedaRecargado) * 100) / 100
-  return { falta, montoTransferir, comision, quedaRecargado }
+  const faltaRedondeada = Math.ceil(falta)
+  const montoTransferir = Math.ceil((faltaRedondeada / (1 - comisionPct)) * 100) / 100
+  const comision = Math.round(montoTransferir * comisionPct * 100) / 100
+  const quedaRecargado = Math.round((montoTransferir - comision) * 100) / 100
+  return { falta, faltaRedondeada, montoTransferir, comision, quedaRecargado }
 }
