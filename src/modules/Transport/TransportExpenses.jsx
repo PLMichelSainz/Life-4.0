@@ -147,7 +147,11 @@ export default function TransportExpenses() {
         {falta > 0 && (
           <div className="grid cols-2" style={{ marginTop: 10 }}>
             <div className="stat">
-              <div className="label">{t('transport.commission')((COMISION_PCT * 100).toFixed(0))}</div>
+              <div className="label">
+                {recarga.tipoComision === 'fija'
+                  ? (lang === 'en' ? 'Commission ($8 flat)' : 'Comisión ($8 fija)')
+                  : t('transport.commission')((COMISION_PCT * 100).toFixed(0))}
+              </div>
               <div className="value mono">{formatMXN(recarga.comision)}</div>
             </div>
             <div className="stat" style={{ borderColor: 'var(--accent)' }}>

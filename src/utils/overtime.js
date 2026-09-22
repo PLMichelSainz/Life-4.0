@@ -75,16 +75,37 @@ export function formatMXN(n) {
  * cubierto (o ligeramente por encima, por el redondeo a centavos) el
  * monto faltante.
  */
+/**
+ * Calcula cuánto transferir para recargar la tarjeta, según las reglas
+ * reales de comisión:
+ *  - Recargas de $30 a $199.99: comisión fija de $8 MXN.
+ *  - Recargas de $200 en adelante: comisión del 3%.
+ * El monto faltante se redondea hacia arriba a pesos completos antes de
+ * calcular, para asegurar que la recarga siempre cubra lo necesario.
+ */
 export function calcularRecarga(falta, comisionPct = 0.03) {
   if (falta <= 0) {
-    return { falta: 0, montoTransferir: 0, comision: 0, quedaRecargado: 0 }
+    return { falta: 0, montoTransferir: 0, comision: 0, quedaRecargado: 0, tipoComision: null }
   }
-  // "Quedará recargado" es la cifra cerrada (sin centavos): se redondea
-  // hacia arriba para asegurar que cubra lo que falta. El monto a transferir
-  // sí puede llevar centavos, ya que es lo que hay que enviar para que,
-  // después de descontar la comisión, quede exactamente ese entero recargado.
-  const quedaRecargado = Math.ceil(falta)
-  const montoTransferir = Math.round((quedaRecargado / (1 - comisionPct)) * 100) / 100
+
+  const objetivo = Math.ceil(falta) // monto que debe quedar cubierto, en pesos completos
+  const RECARGA_MINIMA = 30
+  const COMISION_FIJA = 8
+  const UMBRAL_PORCENTAJE = 200
+
+  // Comisión fija de $8: válida para recargas entre $30 y $199.99.
+  const candidatoFijo = objetivo + COMISION_FIJA
+  if (candidatoFijo < UMBRAL_PORCENTAJE) {
+    const montoTransferir = Math.max(RECARGA_MINIMA, candidatoFijo)
+    const comision = COMISION_FIJA
+    const quedaRecargado = montoTransferir - comision
+    return { falta, montoTransferir, comision, quedaRecargado, tipoComision: 'fija' }
+  }
+
+  // Comisión del 3%: válida para recargas de $200 en adelante.
+  let montoTransferir = Math.round((objetivo / (1 - comisionPct)) * 100) / 100
+  if (montoTransferir < UMBRAL_PORCENTAJE) montoTransferir = UMBRAL_PORCENTAJE
+  const quedaRecargado = Math.round(montoTransferir * (1 - comisionPct) * 100) / 100
   const comision = Math.round((montoTransferir - quedaRecargado) * 100) / 100
-  return { falta, montoTransferir, comision, quedaRecargado }
+  return { falta, montoTransferir, comision, quedaRecargado, tipoComision: 'porcentaje' }
 }
