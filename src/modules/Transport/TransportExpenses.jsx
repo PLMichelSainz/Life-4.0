@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAppData } from '../../context/AppDataContext'
 import { useLanguage } from '../../context/LanguageContext'
-import { catorcenaPagoPorIndice, indiceCatorcenaPago, diasDeCatorcena, esViernesDePago } from '../../utils/payroll'
+import { catorcenaPagoPorIndice, indiceCatorcenaPago, diasDeCatorcena } from '../../utils/payroll'
 import { todayISO, formatShort, dayName } from '../../utils/dates'
 import { formatMXN, calcularRecarga } from '../../utils/overtime'
 
@@ -165,7 +165,7 @@ export default function TransportExpenses() {
       </div>
 
       <div className="card">
-        <p className="card-title">{t('transport.dailyLog')}</p>
+        <p className="card-title">{t('transport.dailyLog')} · v2026-09-22-A</p>
         <p className="card-sub">{t('transport.dailyLogDesc')}</p>
         {dias.map((fecha) => {
           const bloqueado = fecha < hoy
@@ -173,9 +173,9 @@ export default function TransportExpenses() {
           const normalMostrado = bloqueado ? 0 : valorEfectivoDia(registro, 'normal', hoy, fecha, transporteDefault)
           const transbordoMostrado = bloqueado ? 0 : valorEfectivoDia(registro, 'transbordo', hoy, fecha, transporteDefault)
           const esHoy = fecha === hoy
-          const esPago = esViernesDePago(fecha)
+          const esPago = fecha === catorcena.payDate
           return (
-            <div className={`day-row${bloqueado ? ' locked' : ''}`} key={fecha}>
+            <div className={`day-row${bloqueado ? ' locked' : ''}${esPago ? ' payday' : ''}`} key={fecha}>
               <div>
                 <div className="day-name">
                   {dayName(fecha, true, lang)}
