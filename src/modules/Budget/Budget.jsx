@@ -2,7 +2,8 @@ import { useState, useMemo } from 'react'
 import { useAppData } from '../../context/AppDataContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { formatMXN } from '../../utils/overtime'
-import { currentPeriod } from '../../utils/dates'
+import { todayISO, formatShort } from '../../utils/dates'
+import { indiceCatorcenaPago, catorcenaPagoPorIndice } from '../../utils/payroll'
 
 const TIPO_KEY = { credito: 'credito', debito: 'debito', cash: 'cash' }
 
@@ -20,33 +21,33 @@ function CuentaFila({ item, t, onUpdate, onRemove }) {
   }
 
   return (
-    <div>
-      <div className="day-row">
+    <div className="stat" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 6 }}>
         <div>
-          <div className="day-name" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {item.concepto}
-            <span className="pill">
-              {t(`budget.typeLabels.${TIPO_KEY[item.tipo] || 'debito'}`)}
-            </span>
-          </div>
-          <div className="day-date">{formatMXN(item.monto)}</div>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn" onClick={() => setEditando((v) => !v)}>{editando ? t('common.close') : t('common.edit')}</button>
-          <button className="btn danger" onClick={() => onRemove(item.id)}>{t('common.delete')}</button>
+          <div className="label" style={{ marginBottom: 2 }}>{item.concepto}</div>
+          <span className="pill">{t(`budget.typeLabels.${TIPO_KEY[item.tipo] || 'debito'}`)}</span>
         </div>
       </div>
+      <div className="value mono">{formatMXN(item.monto)}</div>
+      <div style={{ display: 'flex', gap: 6 }}>
+        <button className="btn" style={{ flex: 1, padding: '5px 8px', fontSize: '0.72rem' }} onClick={() => setEditando((v) => !v)}>
+          {editando ? t('common.close') : t('common.edit')}
+        </button>
+        <button className="btn danger" style={{ flex: 1, padding: '5px 8px', fontSize: '0.72rem' }} onClick={() => onRemove(item.id)}>
+          {t('common.delete')}
+        </button>
+      </div>
       {editando && (
-        <form onSubmit={guardar} style={{ display: 'flex', gap: 10, flexWrap: 'wrap', padding: '0 0 12px' }}>
-          <div style={{ flex: 2, minWidth: 160 }}>
+        <form onSubmit={guardar} style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 4 }}>
+          <div>
             <label>{t('budget.concept')}</label>
             <input type="text" value={concepto} onChange={(e) => setConcepto(e.target.value)} />
           </div>
-          <div style={{ flex: 1, minWidth: 110 }}>
+          <div>
             <label>{t('budget.amount')}</label>
             <input type="number" min="0" value={monto} onChange={(e) => setMonto(e.target.value)} />
           </div>
-          <div style={{ width: 130 }}>
+          <div>
             <label>{t('budget.type')}</label>
             <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
               <option value="credito">{t('budget.typeLabels.credito')}</option>
@@ -199,8 +200,12 @@ export default function Budget() {
     gastosFijos, addGastoFijo, updateGastoFijo, removeGastoFijo, pagarGastoFijo,
     productos,
   } = useAppData()
-  const { t } = useLanguage()
-  const periodo = currentPeriod()
+  const { t, lang } = useLanguage()
+  // El "periodo" que resetea los gastos fijos ahora es la catorcena de pago
+  // real (mismo sistema que Transporte), no el mes calendario: así el monto
+  // pagado vuelve a $0 justo cuando llega tu siguiente día de pago.
+  const periodo = indiceCatorcenaPago(todayISO())
+  const catorcenaActual = useMemo(() => catorcenaPagoPorIndice(periodo), [periodo])
 
   const [conceptoCuenta, setConceptoCuenta] = useState('')
   const [montoCuenta, setMontoCuenta] = useState('')
@@ -323,9 +328,13 @@ export default function Budget() {
         </div>
 
         {cuentas.length === 0 && <p className="empty">{t('budget.emptyAccounts')}</p>}
-        {cuentas.map((c) => (
-          <CuentaFila key={c.id} item={c} t={t} onUpdate={updateCuenta} onRemove={removeCuenta} />
-        ))}
+        {cuentas.length > 0 && (
+          <div className="grid cols-3" style={{ marginBottom: 12 }}>
+            {cuentas.map((c) => (
+              <CuentaFila key={c.id} item={c} t={t} onUpdate={updateCuenta} onRemove={removeCuenta} />
+            ))}
+          </div>
+        )}
 
         <form onSubmit={crearCuenta} style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap', marginTop: 12 }}>
           <div style={{ flex: 2, minWidth: 160 }}>
@@ -378,7 +387,9 @@ export default function Budget() {
       {/* ---- Gastos fijos ---- */}
       <div className="card">
         <p className="card-title">{t('budget.fixedExpensesTitle')}</p>
-        <p className="card-sub">{t('budget.fixedExpensesDesc')}</p>
+        <p className="card-sub">
+          {t('budget.fixedExpensesDesc')} · se resetea el {formatShort(catorcenaActual.siguientePago, lang)}
+        </p>
         <form onSubmit={crearGasto} style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
           <div style={{ flex: 2, minWidth: 160 }}>
             <label>{t('budget.concept')}</label>
