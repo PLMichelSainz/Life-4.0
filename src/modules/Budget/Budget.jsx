@@ -386,7 +386,7 @@ export default function Budget() {
 
       {/* ---- Gastos fijos ---- */}
       <div className="card">
-        <p className="card-title">{t('budget.fixedExpensesTitle')}</p>
+        <p className="card-title">{t('budget.fixedExpensesTitle')} · v-budget-2026-09-22-A</p>
         <p className="card-sub">
           {t('budget.fixedExpensesDesc')} · se resetea el {formatShort(catorcenaActual.siguientePago, lang)}
         </p>
