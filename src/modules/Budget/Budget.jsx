@@ -103,14 +103,22 @@ function IngresoFila({ item, t, onUpdate, onRemove }) {
   )
 }
 
-function GastoFijoFila({ gasto, t, periodo, onUpdate, onRemove, onPagar }) {
+function sumaPagos(pagosPeriodo) {
+  if (!pagosPeriodo) return 0
+  if (Array.isArray(pagosPeriodo)) return pagosPeriodo.reduce((a, p) => a + (Number(p.monto) || 0), 0)
+  return Number(pagosPeriodo) || 0 // formato antiguo: un solo total acumulado, sin desglose
+}
+
+function GastoFijoFila({ gasto, t, periodo, onUpdate, onRemove, onPagar, onEliminarPago }) {
   const [editando, setEditando] = useState(false)
   const [concepto, setConcepto] = useState(gasto.concepto)
   const [monto, setMonto] = useState(String(gasto.monto))
   const [categoria, setCategoria] = useState(gasto.categoria || '')
   const [abono, setAbono] = useState('')
 
-  const pagado = Math.min(gasto.monto, (gasto.pagos || {})[periodo] || 0)
+  const pagosPeriodo = (gasto.pagos || {})[periodo]
+  const pagosLista = Array.isArray(pagosPeriodo) ? pagosPeriodo : []
+  const pagado = Math.min(gasto.monto, sumaPagos(pagosPeriodo))
   const pendiente = Math.max(0, gasto.monto - pagado)
   const liquidado = pendiente === 0 && gasto.monto > 0
 
@@ -180,6 +188,20 @@ function GastoFijoFila({ gasto, t, periodo, onUpdate, onRemove, onPagar }) {
         </div>
       </div>
 
+      {pagosLista.length > 0 && (
+        <div style={{ marginTop: 12 }}>
+          <p className="card-sub" style={{ marginBottom: 4 }}>{t('budget.paymentAmount')}</p>
+          {pagosLista.map((p) => (
+            <div className="day-row" key={p.id}>
+              <div className="value mono" style={{ fontSize: '0.85rem' }}>{formatMXN(p.monto)}</div>
+              <button className="btn danger" style={{ padding: '4px 10px', fontSize: '0.72rem' }} onClick={() => onEliminarPago(gasto.id, periodo, p.id)}>
+                {t('common.delete')}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {!liquidado && (
         <form onSubmit={registrarPago} style={{ display: 'flex', gap: 8, alignItems: 'flex-end', marginTop: 12, flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: 130 }}>
@@ -197,7 +219,7 @@ export default function Budget() {
   const {
     cuentas, addCuenta, updateCuenta, removeCuenta,
     ingresos, addIngreso, updateIngreso, removeIngreso,
-    gastosFijos, addGastoFijo, updateGastoFijo, removeGastoFijo, pagarGastoFijo,
+    gastosFijos, addGastoFijo, updateGastoFijo, removeGastoFijo, pagarGastoFijo, eliminarPagoGastoFijo,
     productos,
   } = useAppData()
   const { t, lang } = useLanguage()
@@ -229,7 +251,7 @@ export default function Budget() {
   const gastosConPendiente = useMemo(
     () =>
       gastosFijos.map((g) => {
-        const pagado = Math.min(g.monto, (g.pagos || {})[periodo] || 0)
+        const pagado = Math.min(g.monto, sumaPagos((g.pagos || {})[periodo]))
         return { ...g, pagado, pendiente: Math.max(0, g.monto - pagado) }
       }),
     [gastosFijos, periodo]
@@ -411,7 +433,16 @@ export default function Budget() {
         <div className="card"><p className="empty">{t('budget.emptyExpenses')}</p></div>
       )}
       {gastosConPendiente.map((g) => (
-        <GastoFijoFila key={g.id} gasto={g} t={t} periodo={periodo} onUpdate={updateGastoFijo} onRemove={removeGastoFijo} onPagar={(id, monto) => pagarGastoFijo(id, monto, periodo)} />
+        <GastoFijoFila
+          key={g.id}
+          gasto={g}
+          t={t}
+          periodo={periodo}
+          onUpdate={updateGastoFijo}
+          onRemove={removeGastoFijo}
+          onPagar={(id, monto) => pagarGastoFijo(id, monto, periodo)}
+          onEliminarPago={eliminarPagoGastoFijo}
+        />
       ))}
     </div>
   )

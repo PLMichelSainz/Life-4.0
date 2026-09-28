@@ -198,18 +198,30 @@ export function AppDataProvider({ children }) {
   function removeGastoFijo(id) {
     setGastosFijos((prev) => prev.filter((g) => g.id !== id))
   }
-  // Registra un pago (se acumula) del gasto fijo en el periodo mensual actual
-  // (YYYY-MM). Al cambiar de mes, el periodo nuevo no existe en `pagos` todavía,
-  // así que "pagado" vuelve a 0 automáticamente sin borrar el historial de meses anteriores.
+  // Registra un pago (como un movimiento individual, con su propio id y fecha)
+  // del gasto fijo en la catorcena de pago actual. Al cambiar de catorcena,
+  // el periodo nuevo no existe en `pagos` todavía, así que "pagado" vuelve a
+  // 0 automáticamente sin borrar el historial de catorcenas anteriores.
   function pagarGastoFijo(id, monto, periodo) {
     const abono = Number(monto) || 0
     if (abono <= 0) return
     setGastosFijos((prev) =>
-      prev.map((g) =>
-        g.id === id
-          ? { ...g, pagos: { ...(g.pagos || {}), [periodo]: ((g.pagos || {})[periodo] || 0) + abono } }
-          : g
-      )
+      prev.map((g) => {
+        if (g.id !== id) return g
+        const pagosPeriodo = Array.isArray((g.pagos || {})[periodo]) ? g.pagos[periodo] : []
+        const nuevoPago = { id: crypto.randomUUID(), monto: abono, fecha: new Date().toISOString() }
+        return { ...g, pagos: { ...(g.pagos || {}), [periodo]: [...pagosPeriodo, nuevoPago] } }
+      })
+    )
+  }
+  // Elimina un pago individual ya registrado (para corregir errores de captura).
+  function eliminarPagoGastoFijo(id, periodo, pagoId) {
+    setGastosFijos((prev) =>
+      prev.map((g) => {
+        if (g.id !== id) return g
+        const pagosPeriodo = Array.isArray((g.pagos || {})[periodo]) ? g.pagos[periodo] : []
+        return { ...g, pagos: { ...(g.pagos || {}), [periodo]: pagosPeriodo.filter((p) => p.id !== pagoId) } }
+      })
     )
   }
 
@@ -310,6 +322,7 @@ export function AppDataProvider({ children }) {
     updateGastoFijo,
     removeGastoFijo,
     pagarGastoFijo,
+    eliminarPagoGastoFijo,
     productos,
     addProducto,
     updateProducto,
