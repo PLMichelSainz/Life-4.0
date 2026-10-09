@@ -273,7 +273,8 @@ export default function Budget() {
     [productos]
   )
 
-  const proyeccionMensual = totalIngresos - totalMensualGastos
+  // Dinero total en cuentas (incluye crédito) menos los gastos fijos que aún faltan por pagar.
+  const proyeccionMensual = totalDineroActual - totalPendienteGastos
 
   function crearCuenta(e) {
     e.preventDefault()

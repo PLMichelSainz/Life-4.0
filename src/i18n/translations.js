@@ -240,7 +240,7 @@ export const translations = {
       restocksTitle: 'Reposiciones pendientes',
       restocksDesc: 'Productos marcados como "Necesito comprar". No se restan de tu dinero disponible hasta que los compres.',
       monthlyProjectionTitle: 'Proyección mensual',
-      monthlyProjectionDesc: 'Ingresos − gastos fijos del mes (expectativa, no tu saldo real hoy).',
+      monthlyProjectionDesc: 'Dinero total en tus cuentas − gastos fijos pendientes por pagar.',
       uncategorized: 'Sin categoría',
     },
     products: {
@@ -529,7 +529,7 @@ export const translations = {
       restocksTitle: 'Pending restocks',
       restocksDesc: 'Products marked "Need to buy". Not subtracted from your available money until you actually buy them.',
       monthlyProjectionTitle: 'Monthly projection',
-      monthlyProjectionDesc: 'Income − fixed expenses for the month (an expectation, not your real balance today).',
+      monthlyProjectionDesc: 'Total money in your accounts − fixed expenses still pending.',
       uncategorized: 'Uncategorized',
     },
     products: {
