@@ -5,8 +5,10 @@ import { formatMXN } from '../../utils/overtime'
 import { formatShort, todayISO } from '../../utils/dates'
 
 function calcularFijo(fijo) {
-  const pagado = fijo.pagos.reduce((a, p) => a + (Number(p.monto) || 0), 0)
-  const pendiente = Math.max(0, fijo.montoTotal - pagado)
+  // Se redondea a centavos para evitar errores de coma flotante (0.1 + 0.2).
+  const aCentavos = (n) => Math.round(n * 100) / 100
+  const pagado = aCentavos(fijo.pagos.reduce((a, p) => a + (Number(p.monto) || 0), 0))
+  const pendiente = Math.max(0, aCentavos(fijo.montoTotal - pagado))
   const liquidada = pendiente === 0 && fijo.montoTotal > 0
   const avance = fijo.montoTotal > 0 ? Math.min(100, Math.round((pagado / fijo.montoTotal) * 100)) : 0
   return { pagado, pendiente, liquidada, avance }
@@ -66,7 +68,7 @@ function TarjetaFijo({ fijo, t, lang }) {
           </div>
           <div style={{ flex: 1, minWidth: 110 }}>
             <label>{t('fixed.totalAmount')}</label>
-            <input type="number" min="0" value={montoTotal} onChange={(e) => setMontoTotal(e.target.value)} />
+            <input type="number" min="0" step="0.01" value={montoTotal} onChange={(e) => setMontoTotal(e.target.value)} />
           </div>
           <div style={{ flexBasis: '100%' }}>
             <label>{t('common.comment')}</label>
@@ -109,7 +111,7 @@ function TarjetaFijo({ fijo, t, lang }) {
         <form onSubmit={registrarPago} style={{ display: 'flex', gap: 8, alignItems: 'flex-end', marginTop: 14, flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: 110 }}>
             <label>{t('fixed.paymentAmount')}</label>
-            <input type="number" min="0" value={montoPago} onChange={(e) => setMontoPago(e.target.value)} placeholder="0.00" />
+            <input type="number" min="0" step="0.01" value={montoPago} onChange={(e) => setMontoPago(e.target.value)} placeholder="0.00" />
           </div>
           <div style={{ flex: 1, minWidth: 130 }}>
             <label>{t('common.date')}</label>
@@ -193,7 +195,7 @@ export default function FixedCosts() {
           </div>
           <div style={{ flex: 1, minWidth: 120 }}>
             <label>{t('fixed.totalAmount')}</label>
-            <input type="number" min="0" value={monto} onChange={(e) => setMonto(e.target.value)} placeholder="0.00" />
+            <input type="number" min="0" step="0.01" value={monto} onChange={(e) => setMonto(e.target.value)} placeholder="0.00" />
           </div>
           <div style={{ flexBasis: '100%' }}>
             <label>{t('common.comment')}</label>
