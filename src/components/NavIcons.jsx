@@ -39,10 +39,16 @@ export const ICONS = {
       <circle cx="7" cy="14" r="1" fill="currentColor" stroke="none" />
     </Base>
   ),
+  fixed: () => (
+    <Base>
+      <rect x="4" y="3.5" width="16" height="17" rx="2" />
+      <path d="M8 9h8M8 13h8M8 17h4" />
+    </Base>
+  ),
   salaries: () => (
     <Base>
-      <path d="M12 3v18" />
-      <path d="M16.5 7.5c0-1.7-2-3-4.5-3S7.5 5.8 7.5 7.5c0 3 9 2 9 5.5 0 1.7-2 3-4.5 3s-4.5-1.3-4.5-3" />
+      <path d="M12 3v2.5M12 18.5V21" />
+      <path d="M16 8.5c0-1.7-1.8-3-4-3s-4 1.3-4 3c0 3.2 8 2.3 8 6 0 1.7-1.8 3-4 3s-4-1.3-4-3" />
     </Base>
   ),
   budget: () => (

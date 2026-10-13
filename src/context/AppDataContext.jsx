@@ -27,6 +27,9 @@ export function AppDataProvider({ children }) {
   // deudas: [{ id, nombre, montoTotal, pagos: [{ id, monto, fecha }] }]
   const [deudas, setDeudas, refetchDeudas] = useCloudState(uid, 'debts.items', [])
 
+  // fijos (módulo "Gastos fijos", misma estructura que deudas): [{ id, nombre, montoTotal, comentario, pagos: [{ id, monto, fecha }] }]
+  const [fijos, setFijos, refetchFijos] = useCloudState(uid, 'fixedcosts.items', [])
+
   // saldo libre de la tarjeta de transporte (se actualiza manualmente)
   const [tarjetaSaldo, setTarjetaSaldo, refetchTarjetaSaldo] = useCloudState(uid, 'transport.cardBalance', 0)
 
@@ -62,6 +65,7 @@ export function AppDataProvider({ children }) {
       refetchTransporteDefault(),
       refetchWishlist(),
       refetchDeudas(),
+      refetchFijos(),
       refetchTarjetaSaldo(),
       refetchTarifa(),
       refetchDeducciones(),
@@ -154,6 +158,37 @@ export function AppDataProvider({ children }) {
   function removePagoDeuda(deudaId, pagoId) {
     setDeudas((prev) =>
       prev.map((d) => (d.id === deudaId ? { ...d, pagos: d.pagos.filter((p) => p.id !== pagoId) } : d))
+    )
+  }
+
+  function addFijo(nombre, montoTotal, comentario = '') {
+    setFijos((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), nombre, montoTotal: Number(montoTotal) || 0, comentario, pagos: [] },
+    ])
+  }
+
+  function updateFijo(id, cambios) {
+    setFijos((prev) => prev.map((d) => (d.id === id ? { ...d, ...cambios } : d)))
+  }
+
+  function removeFijo(id) {
+    setFijos((prev) => prev.filter((d) => d.id !== id))
+  }
+
+  function addPagoFijo(fijoId, monto, fecha) {
+    setFijos((prev) =>
+      prev.map((d) =>
+        d.id === fijoId
+          ? { ...d, pagos: [...d.pagos, { id: crypto.randomUUID(), monto: Number(monto) || 0, fecha }] }
+          : d
+      )
+    )
+  }
+
+  function removePagoFijo(fijoId, pagoId) {
+    setFijos((prev) =>
+      prev.map((d) => (d.id === fijoId ? { ...d, pagos: d.pagos.filter((p) => p.id !== pagoId) } : d))
     )
   }
 
@@ -302,6 +337,12 @@ export function AppDataProvider({ children }) {
     removeDeuda,
     addPagoDeuda,
     removePagoDeuda,
+    fijos,
+    addFijo,
+    updateFijo,
+    removeFijo,
+    addPagoFijo,
+    removePagoFijo,
     tarjetaSaldo,
     setTarjetaSaldo,
     tarifaPorHora,

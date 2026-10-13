@@ -7,6 +7,7 @@ import PayrollCalendar from './modules/Payroll/PayrollCalendar'
 import TransportExpenses from './modules/Transport/TransportExpenses'
 import Wishlist from './modules/Wishlist/Wishlist'
 import Debts from './modules/Debts/Debts'
+import FixedCosts from './modules/FixedCosts/FixedCosts'
 import SalaryRates from './modules/Salaries/SalaryRates'
 import Budget from './modules/Budget/Budget'
 import Products from './modules/Products/Products'
@@ -27,6 +28,7 @@ export default function App() {
           {moduleId === 'transport' && <TransportExpenses />}
           {moduleId === 'wishlist' && <Wishlist />}
           {moduleId === 'debts' && <Debts />}
+          {moduleId === 'fixed' && <FixedCosts />}
           {moduleId === 'salaries' && <SalaryRates />}
           {moduleId === 'budget' && <Budget />}
           {moduleId === 'products' && <Products />}
