@@ -12,6 +12,12 @@ export function AppDataProvider({ children }) {
   // horasPorSemana: { [weekStartISO]: [h0..h6] } (lunes..domingo)
   const [horasPorSemana, setHorasPorSemana, refetchHoras] = useCloudState(uid, 'overtime.weeks', {})
 
+  // undertimePorSemana: { [weekStartISO]: [u0..u6] } horas de undertime por día (se restan de las horas)
+  const [undertimePorSemana, setUndertimePorSemana, refetchUndertime] = useCloudState(uid, 'overtime.undertime', {})
+
+  // horarios: { [fechaISO]: { rows: [{ c, s, e }], at } } horario leído de las capturas (solo datos, sin imágenes)
+  const [horarios, setHorarios, refetchHorarios] = useCloudState(uid, 'overtime.schedules', {})
+
   // transporte: { [dateISO]: { normal: number, transbordo: number } } (solo días editados a mano)
   const [transporte, setTransporte, refetchTransporte] = useCloudState(uid, 'transport.days', {})
 
@@ -61,6 +67,8 @@ export function AppDataProvider({ children }) {
   async function syncAll() {
     await Promise.all([
       refetchHoras(),
+      refetchUndertime(),
+      refetchHorarios(),
       refetchTransporte(),
       refetchTransporteDefault(),
       refetchWishlist(),
@@ -83,6 +91,26 @@ export function AppDataProvider({ children }) {
       const nueva = [...semanaActual]
       nueva[dayIndex] = horas
       return { ...prev, [weekStartISO]: nueva }
+    })
+  }
+
+  function setUndertimeDia(weekStartISO, dayIndex, horas) {
+    setUndertimePorSemana((prev) => {
+      const semanaActual = prev[weekStartISO] || [0, 0, 0, 0, 0, 0, 0]
+      const nueva = [...semanaActual]
+      nueva[dayIndex] = horas
+      return { ...prev, [weekStartISO]: nueva }
+    })
+  }
+
+  function setHorario(fechaISO, rows) {
+    setHorarios((prev) => ({ ...prev, [fechaISO]: { rows, at: new Date().toISOString() } }))
+  }
+
+  function removeHorario(fechaISO) {
+    setHorarios((prev) => {
+      const { [fechaISO]: _quitado, ...resto } = prev
+      return resto
     })
   }
 
@@ -319,6 +347,11 @@ export function AppDataProvider({ children }) {
 
   const value = {
     horasPorSemana,
+    undertimePorSemana,
+    setUndertimeDia,
+    horarios,
+    setHorario,
+    removeHorario,
     setHorasDia,
     transporte,
     setTransporteDia,
