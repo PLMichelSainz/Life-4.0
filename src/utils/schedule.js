@@ -10,7 +10,7 @@ const MESES = {
 }
 
 // Clases de actividad. Cuentan como tiempo trabajado SOLO: open, ext (Schedule Extension)
-// y train (Client Training, en cualquiera de sus variantes). El Under Time jamás se suma;
+// y train (Client Training en cualquiera de sus variantes, y NPS: tiempo laborado igual que Open). El Under Time jamás se suma;
 // Wellness Break y Lunch Break (break) tampoco.
 export const CLASES = ['open', 'ext', 'train', 'ut', 'break', 'other']
 
@@ -21,6 +21,8 @@ export function clasificar(textoActividad) {
   if (/break|lunch|well|ness|meal/.test(t)) return 'break'
   // Client Training y cualquier variante ("Client Training - X", "Client Trng", lecturas con ruido)
   if (/train|trng|tr\w*n\w*ng/.test(t)) return 'train'
+  // NPS (con ruido de lectura: "N PS", "NP5", "NPS Survey"...) cuenta como tiempo laborado
+  if (/(^|[^a-z0-9])n\s?p[s5]([^a-z0-9]|$)/.test(String(textoActividad || '').toLowerCase())) return 'train'
   if (/(^|[^a-z])[o0]p[eao]n([^a-z]|$)/.test(String(textoActividad || '').toLowerCase())) return 'open'
   return 'other'
 }
