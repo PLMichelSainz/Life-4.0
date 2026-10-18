@@ -1,3 +1,5 @@
+import { fr } from './fr.js'
+
 export const translations = {
   es: {
     sidebar: {
@@ -79,6 +81,8 @@ export const translations = {
       payday: 'pago',
       current: 'actual',
       saveChanges: 'Guardar cambios',
+      cancel: 'Cancelar',
+      confirmDelete: '¿Seguro que quieres eliminarlo?',
     },
     overtime: {
       currentBiweek: 'Catorcena en curso',
@@ -101,7 +105,7 @@ export const translations = {
       undertime: 'Undertime',
       fromSchedule: 'horario',
       scheduleTitle: 'Horario catorcenal (capturas)',
-      scheduleDesc: 'Pega con Ctrl+V, arrastra o elige las capturas de tu horario (una por día, hasta 14). La fecha se lee sola. Solo cuentan Open y Schedule Extension; los breaks no.',
+      scheduleDesc: 'Pega con Ctrl+V, arrastra o elige las capturas de tu horario (una por día, hasta 14). La fecha se lee sola. Solo cuentan Open, Schedule Extension y Client Training (cualquier variante); los breaks y el Under Time no.',
       chooseImages: 'Elegir imágenes',
       readingImg: (i, n) => `Leyendo imagen ${i} de ${n}…`,
       readerError: 'No se pudo leer la imagen. La primera vez necesita internet para cargar el lector.',
@@ -117,12 +121,12 @@ export const translations = {
       schedTotal: 'Total trabajado',
       schedUt: 'Undertime en horario',
       schedBreaks: 'Breaks (no cuentan)',
-      cls: { open: 'Open (trabajo)', ext: 'Schedule Extension (extra)', ut: 'Under Time', break: 'Break (no cuenta)', other: 'Otra (no cuenta)' },
+      cls: { open: 'Open (trabajo)', ext: 'Schedule Extension (extra)', train: 'Client Training (trabajo)', ut: 'Under Time (no cuenta)', break: 'Wellness / Lunch Break (no cuenta)', other: 'Otra (no cuenta)' },
       addRow: 'Agregar fila',
       removeSchedule: 'Quitar horario del día',
       gapWarn: (a, b, m) => `Hueco de ${m} min entre ${a} y ${b}: puede faltar una fila.`,
       verifyTitle: 'Verificación contra horario',
-      worked: 'Trabajadas (Open)',
+      worked: 'Trabajadas (Open + Training)',
       extraHrs: 'Extra (Schedule Extension)',
       totalSched: 'Total (Open + Extra)',
       target: 'Meta semanal',
@@ -130,6 +134,9 @@ export const translations = {
       daysLoaded: (n, total = 7) => `${n}/${total} días con horario`,
       partialNote: 'Faltan días por cargar; la comparación es parcial.',
       matchesTarget: 'Coincide con la meta',
+      schedTrain: 'Client Training',
+      totalDecimal: 'Total (decimal)',
+      overlapWarn: (a, b, m) => `Filas encimadas ${m} min entre ${a} y ${b}: puede haber una fila repetida.`,
     },
     payroll: {
       currentBiweek: 'Catorcena en curso',
@@ -298,6 +305,10 @@ export const translations = {
       restocksDesc: 'Productos marcados como "Necesito comprar". No se restan de tu dinero disponible hasta que los compres.',
       monthlyProjectionTitle: 'Proyección mensual',
       monthlyProjectionDesc: 'Dinero total en tus cuentas − gastos fijos pendientes por pagar.',
+      resetBtn: 'Reset',
+      resetAccountsConfirm: '¿Seguro que quieres poner en $0 el saldo de todas las cuentas? Las cuentas se conservan.',
+      resetIncomeConfirm: '¿Seguro que quieres poner en $0 todos los ingresos? Los conceptos se conservan.',
+      resetFixedConfirm: '¿Seguro que quieres reiniciar los pagos de esta catorcena? El monto fijo de cada gasto se conserva.',
       uncategorized: 'Sin categoría',
     },
     products: {
@@ -425,6 +436,8 @@ export const translations = {
       payday: 'payday',
       current: 'current',
       saveChanges: 'Save changes',
+      cancel: 'Cancel',
+      confirmDelete: 'Are you sure you want to delete it?',
     },
     overtime: {
       currentBiweek: 'Current pay period',
@@ -447,7 +460,7 @@ export const translations = {
       undertime: 'Undertime',
       fromSchedule: 'schedule',
       scheduleTitle: 'Pay-period schedule (screenshots)',
-      scheduleDesc: 'Paste with Ctrl+V, drag or choose screenshots of your schedule (one per day, up to 14). The date is read automatically. Only Open and Schedule Extension count; breaks do not.',
+      scheduleDesc: 'Paste with Ctrl+V, drag or choose screenshots of your schedule (one per day, up to 14). The date is read automatically. Only Open, Schedule Extension and Client Training (any variant) count; breaks and Under Time do not.',
       chooseImages: 'Choose images',
       readingImg: (i, n) => `Reading image ${i} of ${n}…`,
       readerError: 'Could not read the image. The first time it needs internet to load the reader.',
@@ -463,12 +476,12 @@ export const translations = {
       schedTotal: 'Total worked',
       schedUt: 'Undertime in schedule',
       schedBreaks: 'Breaks (not counted)',
-      cls: { open: 'Open (work)', ext: 'Schedule Extension (extra)', ut: 'Under Time', break: 'Break (not counted)', other: 'Other (not counted)' },
+      cls: { open: 'Open (work)', ext: 'Schedule Extension (extra)', train: 'Client Training (work)', ut: 'Under Time (not counted)', break: 'Wellness / Lunch Break (not counted)', other: 'Other (not counted)' },
       addRow: 'Add row',
       removeSchedule: 'Remove day schedule',
       gapWarn: (a, b, m) => `${m} min gap between ${a} and ${b}: a row may be missing.`,
       verifyTitle: 'Schedule check',
-      worked: 'Worked (Open)',
+      worked: 'Worked (Open + Training)',
       extraHrs: 'Extra (Schedule Extension)',
       totalSched: 'Total (Open + Extra)',
       target: 'Weekly target',
@@ -476,6 +489,9 @@ export const translations = {
       daysLoaded: (n, total = 7) => `${n}/${total} days with schedule`,
       partialNote: 'Some days are still missing; the comparison is partial.',
       matchesTarget: 'Matches the target',
+      schedTrain: 'Client Training',
+      totalDecimal: 'Total (decimal)',
+      overlapWarn: (a, b, m) => `Rows overlap by ${m} min between ${a} and ${b}: a row may be duplicated.`,
     },
     payroll: {
       currentBiweek: 'Current pay period',
@@ -644,6 +660,10 @@ export const translations = {
       restocksDesc: 'Products marked "Need to buy". Not subtracted from your available money until you actually buy them.',
       monthlyProjectionTitle: 'Monthly projection',
       monthlyProjectionDesc: 'Total money in your accounts − fixed expenses still pending.',
+      resetBtn: 'Reset',
+      resetAccountsConfirm: 'Are you sure you want to set every account balance to $0? The accounts are kept.',
+      resetIncomeConfirm: 'Are you sure you want to set all income amounts to $0? The items are kept.',
+      resetFixedConfirm: 'Are you sure you want to reset this pay period\u2019s payments? Each fixed amount is kept.',
       uncategorized: 'Uncategorized',
     },
     products: {
@@ -691,3 +711,5 @@ export const translations = {
     months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   },
 }
+
+translations.fr = fr

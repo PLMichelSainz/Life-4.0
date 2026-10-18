@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useConfirm } from '../../components/ConfirmDialog'
 import { useAppData } from '../../context/AppDataContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { formatMXN } from '../../utils/overtime'
@@ -13,6 +14,7 @@ function calcularMeta(item) {
 }
 
 function TarjetaMeta({ item, t, lang }) {
+  const pedirConfirmacion = useConfirm()
   const { addAporteWishlist, removeAporteWishlist, removeWishlistItem, updateWishlistItem } = useAppData()
   const [montoAporte, setMontoAporte] = useState('')
   const [fechaAporte, setFechaAporte] = useState(todayISO())
@@ -54,7 +56,7 @@ function TarjetaMeta({ item, t, lang }) {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn" onClick={() => setEditando((v) => !v)}>{editando ? t('common.close') : t('common.edit')}</button>
-          <button className="btn danger" onClick={() => removeWishlistItem(item.id)}>{t('common.delete')}</button>
+          <button className="btn danger" onClick={() => pedirConfirmacion(() => removeWishlistItem(item.id))}>{t('common.delete')}</button>
         </div>
       </div>
 
@@ -134,7 +136,7 @@ function TarjetaMeta({ item, t, lang }) {
                       <div className="day-name mono">{formatMXN(a.monto)}</div>
                       <div className="day-date">{formatShort(a.fecha, lang)}</div>
                     </div>
-                    <button className="btn danger" onClick={() => removeAporteWishlist(item.id, a.id)}>{t('common.remove')}</button>
+                    <button className="btn danger" onClick={() => pedirConfirmacion(() => removeAporteWishlist(item.id, a.id))}>{t('common.remove')}</button>
                   </div>
                 ))}
             </div>

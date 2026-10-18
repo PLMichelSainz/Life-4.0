@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { supabaseConfigurado } from '../lib/supabaseClient'
+import { FlagIcon, IDIOMAS } from './Flags'
 
 export default function AuthGate({ children }) {
   const { session, loading, recovery, signIn, signUp, sendPasswordReset, updatePassword } = useAuth()
@@ -18,10 +19,12 @@ export default function AuthGate({ children }) {
     <button
       type="button"
       className="btn"
-      style={{ position: 'fixed', top: 14, right: 14 }}
+      style={{ position: 'fixed', top: 14, right: 14, display: 'inline-flex', alignItems: 'center', gap: 6 }}
       onClick={toggleLang}
+      title={IDIOMAS[lang]?.nombre}
     >
-      {lang === 'es' ? '🇲🇽 ES' : '🇬🇧 EN'}
+      <FlagIcon lang={lang} />
+      {IDIOMAS[lang]?.code}
     </button>
   )
 

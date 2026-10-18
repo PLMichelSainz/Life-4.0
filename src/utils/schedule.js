@@ -9,15 +9,19 @@ const MESES = {
   jan: 1, feb: 2, mar: 3, apr: 4, jun: 6, jul: 7, aug: 8, sep: 9, sept: 9, oct: 10, nov: 11, dec: 12,
 }
 
-// Clases de actividad. Solo "open" y "ext" cuentan como tiempo trabajado.
-export const CLASES = ['open', 'ext', 'ut', 'break', 'other']
+// Clases de actividad. Cuentan como tiempo trabajado SOLO: open, ext (Schedule Extension)
+// y train (Client Training, en cualquiera de sus variantes). El Under Time jamás se suma;
+// Wellness Break y Lunch Break (break) tampoco.
+export const CLASES = ['open', 'ext', 'train', 'ut', 'break', 'other']
 
 export function clasificar(textoActividad) {
   const t = String(textoActividad || '').toLowerCase().replace(/[^a-z ]/g, ' ')
   if (/exten|sched/.test(t)) return 'ext'
   if (/under|undert/.test(t)) return 'ut'
   if (/break|lunch|well|ness|meal/.test(t)) return 'break'
-  if (/\bop[ea]n\b|\bopen/.test(t)) return 'open'
+  // Client Training y cualquier variante ("Client Training - X", "Client Trng", lecturas con ruido)
+  if (/train|trng|tr\w*n\w*ng/.test(t)) return 'train'
+  if (/(^|[^a-z])[o0]p[eao]n([^a-z]|$)/.test(String(textoActividad || '').toLowerCase())) return 'open'
   return 'other'
 }
 
@@ -56,9 +60,9 @@ export function parseHorarioTexto(texto) {
 }
 
 export function totalesHorario(filas) {
-  const t = { open: 0, ext: 0, ut: 0, break: 0, other: 0 }
+  const t = { open: 0, ext: 0, train: 0, ut: 0, break: 0, other: 0 }
   for (const f of filas || []) t[f.c] = (t[f.c] || 0) + Math.max(0, f.e - f.s)
-  return { ...t, trabajado: t.open + t.ext }
+  return { ...t, trabajado: t.open + t.ext + t.train }
 }
 
 // Huecos entre filas consecutivas (posible fila que no se pudo leer).
@@ -70,6 +74,27 @@ export function huecos(filas) {
     if (gap > 0) out.push({ desde: ord[i - 1].e, hasta: ord[i].s, min: gap })
   }
   return out
+}
+
+// Filas encimadas (p. ej. una fila leída dos veces): también hacen que la suma no cuadre.
+export function solapes(filas) {
+  const ord = [...(filas || [])].sort((a, b) => a.s - b.s)
+  const out = []
+  for (let i = 1; i < ord.length; i++) {
+    const solape = ord[i - 1].e - ord[i].s
+    if (solape > 0) out.push({ desde: ord[i].s, hasta: Math.min(ord[i - 1].e, ord[i].e), min: solape })
+  }
+  return out
+}
+
+// Duración con lógica de reloj: 390 -> "6 h 30 min" (no 6.5 h). Con signo si es negativa.
+export function fmtDuracion(min) {
+  const neg = min < 0
+  const total = Math.round(Math.abs(min))
+  const h = Math.floor(total / 60)
+  const m = total % 60
+  const txt = h && m ? `${h} h ${m} min` : h ? `${h} h` : `${m} min`
+  return neg ? `−${txt}` : txt
 }
 
 export function fmtHora(min) {

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import DraftNumber from '../../components/DraftNumber'
 import { useAppData } from '../../context/AppDataContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { catorcenaPagoPorIndice, indiceCatorcenaPago, diasDeCatorcena } from '../../utils/payroll'
@@ -123,13 +124,12 @@ export default function TransportExpenses() {
 
         <div style={{ maxWidth: 220, marginBottom: 14 }}>
           <label>{t('transport.currentBalance')}</label>
-          <input
-            type="number"
+          <DraftNumber
             min="0"
             step="0.01"
-            value={tarjetaSaldo === 0 ? '' : tarjetaSaldo}
+            value={tarjetaSaldo}
             placeholder="0.00"
-            onChange={(e) => setTarjetaSaldo(Number(e.target.value) || 0)}
+            onCommit={(n) => setTarjetaSaldo(n)}
           />
         </div>
 
@@ -149,7 +149,7 @@ export default function TransportExpenses() {
             <div className="stat">
               <div className="label">
                 {recarga.tipoComision === 'fija'
-                  ? (lang === 'en' ? 'Commission ($8 flat)' : 'Comisión ($8 fija)')
+                  ? ({ en: 'Commission ($8 flat)', fr: 'Frais ($8 fixes)' }[lang] || 'Comisión ($8 fija)')
                   : t('transport.commission')((COMISION_PCT * 100).toFixed(0))}
               </div>
               <div className="value mono">{formatMXN(recarga.comision)}</div>
@@ -195,24 +195,22 @@ export default function TransportExpenses() {
               <div style={{ display: 'flex', gap: 8 }}>
                 <div style={{ width: 90 }}>
                   <label>{t('transport.normal')}</label>
-                  <input
-                    type="number"
+                  <DraftNumber
                     min="0"
                     disabled={bloqueado}
-                    value={normalMostrado === 0 ? '' : normalMostrado}
+                    value={normalMostrado}
                     placeholder="0"
-                    onChange={(e) => setTransporteDia(fecha, 'normal', Number(e.target.value) || 0)}
+                    onCommit={(n) => setTransporteDia(fecha, 'normal', n)}
                   />
                 </div>
                 <div style={{ width: 90 }}>
                   <label>{t('transport.transfer2')}</label>
-                  <input
-                    type="number"
+                  <DraftNumber
                     min="0"
                     disabled={bloqueado}
-                    value={transbordoMostrado === 0 ? '' : transbordoMostrado}
+                    value={transbordoMostrado}
                     placeholder="0"
-                    onChange={(e) => setTransporteDia(fecha, 'transbordo', Number(e.target.value) || 0)}
+                    onCommit={(n) => setTransporteDia(fecha, 'transbordo', n)}
                   />
                 </div>
               </div>

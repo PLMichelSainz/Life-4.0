@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useConfirm } from '../../components/ConfirmDialog'
 import { useAppData } from '../../context/AppDataContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { formatMXN } from '../../utils/overtime'
@@ -15,6 +16,7 @@ function Switch({ on, onToggle, onLabel, offLabel }) {
 }
 
 function ProductoCard({ p, t, onUpdate, onRemove, onToggle }) {
+  const pedirConfirmacion = useConfirm()
   const [editando, setEditando] = useState(false)
   const [f, setF] = useState({
     nombre: p.nombre, categoria: p.categoria, precio: String(p.precio), cantidad: String(p.cantidad),
@@ -57,7 +59,7 @@ function ProductoCard({ p, t, onUpdate, onRemove, onToggle }) {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn" onClick={() => setEditando((v) => !v)}>{editando ? t('common.close') : t('common.edit')}</button>
-          <button className="btn danger" onClick={() => onRemove(p.id)}>{t('common.delete')}</button>
+          <button className="btn danger" onClick={() => pedirConfirmacion(() => onRemove(p.id))}>{t('common.delete')}</button>
         </div>
       </div>
 

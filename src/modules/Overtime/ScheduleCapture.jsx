@@ -1,11 +1,44 @@
 import { useEffect, useRef, useState } from 'react'
+import { useConfirm } from '../../components/ConfirmDialog'
 import { dayName, formatShort, formatLong } from '../../utils/dates'
 import { leerImagen, terminarOcr } from '../../utils/scheduleOcr'
 import {
-  CLASES, parseHorarioTexto, totalesHorario, huecos, fmtHora, minAHHMM, hhmmAMin, minAHoras,
+  CLASES, parseHorarioTexto, totalesHorario, huecos, solapes, fmtHora, fmtDuracion, minAHHMM, hhmmAMin, minAHoras,
 } from '../../utils/schedule'
 
+function ResumenTiempos({ x, t }) {
+  return (
+    <>
+      <div className="grid cols-3">
+        <div className="stat">
+          <div className="label">{t('overtime.schedOpen')}</div>
+          <div className="value mono">{fmtDuracion(x.open)}</div>
+        </div>
+        <div className="stat">
+          <div className="label">{t('overtime.schedExt')}</div>
+          <div className="value mono accent">{fmtDuracion(x.ext)}</div>
+        </div>
+        <div className="stat">
+          <div className="label">{t('overtime.schedTrain')}</div>
+          <div className="value mono">{fmtDuracion(x.train)}</div>
+        </div>
+      </div>
+      <div className="grid cols-2" style={{ marginTop: 10 }}>
+        <div className="stat" style={{ borderColor: 'var(--accent)' }}>
+          <div className="label">{t('overtime.schedTotal')}</div>
+          <div className="value mono accent">{fmtDuracion(x.trabajado)}</div>
+        </div>
+        <div className="stat">
+          <div className="label">{t('overtime.totalDecimal')}</div>
+          <div className="value mono">{minAHoras(x.trabajado)} h</div>
+        </div>
+      </div>
+    </>
+  )
+}
+
 export default function ScheduleCapture({ dias, horarios, onSave, onRemove, lang, t }) {
+  const pedirConfirmacion = useConfirm()
   const [procesando, setProcesando] = useState(null) // { i, n }
   const [mensajes, setMensajes] = useState([])
   const [pendientes, setPendientes] = useState([]) // capturas sin fecha reconocida
@@ -66,7 +99,7 @@ export default function ScheduleCapture({ dias, horarios, onSave, onRemove, lang
 
   // ---- resumen de la catorcena según horario ----
   let nDias = 0
-  const tot = { open: 0, ext: 0, trabajado: 0 }
+  const tot = { open: 0, ext: 0, train: 0, trabajado: 0 }
   dias.forEach((f) => {
     const h = horarios[f]
     if (!h) return
@@ -74,12 +107,14 @@ export default function ScheduleCapture({ dias, horarios, onSave, onRemove, lang
     const x = totalesHorario(h.rows)
     tot.open += x.open
     tot.ext += x.ext
+    tot.train += x.train
     tot.trabajado += x.trabajado
   })
 
   const sel = seleccionado && horarios[seleccionado] ? horarios[seleccionado] : null
   const selTot = sel ? totalesHorario(sel.rows) : null
   const selHuecos = sel ? huecos(sel.rows) : []
+  const selSolapes = sel ? solapes(sel.rows) : []
 
   function editarFila(idx, cambios) {
     const rows = sel.rows.map((r, i) => (i === idx ? { ...r, ...cambios } : r))
@@ -151,15 +186,15 @@ export default function ScheduleCapture({ dias, horarios, onSave, onRemove, lang
       )}
 
       {/* 14 casillas: una por día de la catorcena */}
-      <div className="grid cols-7" style={{ marginBottom: 12 }}>
+      <div className="slots-grid" style={{ marginBottom: 12 }}>
         {dias.map((f) => {
           const h = horarios[f]
-          const horas = h ? minAHoras(totalesHorario(h.rows).trabajado) : null
+          const minTrab = h ? totalesHorario(h.rows).trabajado : null
           return (
             <button
               key={f}
               className="stat"
-              onClick={() => setSeleccionado(f)}
+              onClick={() => setSeleccionado((actual) => (actual === f ? null : f))}
               style={{
                 textAlign: 'left',
                 cursor: 'pointer',
@@ -168,7 +203,9 @@ export default function ScheduleCapture({ dias, horarios, onSave, onRemove, lang
               }}
             >
               <div className="label">{dayName(f, true, lang)} · {formatShort(f, lang)}</div>
-              <div className="value mono" style={{ fontSize: '0.95rem' }}>{horas === null ? '—' : `${horas} h`}</div>
+              <div className="value mono" style={{ fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
+                {minTrab === null ? '—' : fmtDuracion(minTrab)}
+              </div>
             </button>
           )
         })}
@@ -179,20 +216,7 @@ export default function ScheduleCapture({ dias, horarios, onSave, onRemove, lang
           <p className="card-sub" style={{ marginBottom: 6 }}>
             {t('overtime.schedCatorcena')} · {t('overtime.daysLoaded')(nDias, dias.length)}
           </p>
-          <div className="grid cols-3">
-            <div className="stat">
-              <div className="label">{t('overtime.schedOpen')}</div>
-              <div className="value mono">{minAHoras(tot.open)} h</div>
-            </div>
-            <div className="stat">
-              <div className="label">{t('overtime.schedExt')}</div>
-              <div className="value mono accent">{minAHoras(tot.ext)} h</div>
-            </div>
-            <div className="stat" style={{ borderColor: 'var(--accent)' }}>
-              <div className="label">{t('overtime.schedTotal')}</div>
-              <div className="value mono accent">{minAHoras(tot.trabajado)} h</div>
-            </div>
-          </div>
+          <ResumenTiempos x={tot} t={t} />
         </div>
       )}
 
@@ -200,27 +224,22 @@ export default function ScheduleCapture({ dias, horarios, onSave, onRemove, lang
       {sel && (
         <div style={{ borderTop: '1px solid var(--border-soft)', paddingTop: 12 }}>
           <p className="card-title">{formatLong(seleccionado, lang)}</p>
-          <div className="grid cols-3" style={{ margin: '8px 0' }}>
-            <div className="stat">
-              <div className="label">{t('overtime.schedOpen')}</div>
-              <div className="value mono">{minAHoras(selTot.open)} h</div>
-            </div>
-            <div className="stat">
-              <div className="label">{t('overtime.schedExt')}</div>
-              <div className="value mono accent">{minAHoras(selTot.ext)} h</div>
-            </div>
-            <div className="stat" style={{ borderColor: 'var(--accent)' }}>
-              <div className="label">{t('overtime.schedTotal')}</div>
-              <div className="value mono accent">{minAHoras(selTot.trabajado)} h</div>
-            </div>
+          <div style={{ margin: '8px 0' }}>
+            <ResumenTiempos x={selTot} t={t} />
           </div>
           <p className="card-sub">
-            {t('overtime.schedUt')}: {minAHoras(selTot.ut)} h · {t('overtime.schedBreaks')}: {minAHoras(selTot.break)} h
+            {t('overtime.schedUt')}: {fmtDuracion(selTot.ut)} · {t('overtime.schedBreaks')}: {fmtDuracion(selTot.break)}
           </p>
 
           {selHuecos.map((g) => (
             <p key={g.desde} className="card-sub" style={{ color: 'var(--danger)', margin: '0 0 4px' }}>
               {t('overtime.gapWarn')(fmtHora(g.desde), fmtHora(g.hasta), g.min)}
+            </p>
+          ))}
+
+          {selSolapes.map((g) => (
+            <p key={`s${g.desde}`} className="card-sub" style={{ color: 'var(--danger)', margin: '0 0 4px' }}>
+              {t('overtime.overlapWarn')(fmtHora(g.desde), fmtHora(g.hasta), g.min)}
             </p>
           ))}
 
@@ -256,7 +275,7 @@ export default function ScheduleCapture({ dias, horarios, onSave, onRemove, lang
                   }}
                 />
                 <span className="mono card-sub" style={{ margin: 0, minWidth: 54 }}>{r.e - r.s} min</span>
-                <button className="btn danger" style={{ padding: '4px 10px' }} onClick={() => quitarFila(idx)}>
+                <button className="btn danger" style={{ padding: '4px 10px' }} onClick={() => pedirConfirmacion(() => quitarFila(idx))}>
                   {t('common.delete')}
                 </button>
               </div>
@@ -267,10 +286,10 @@ export default function ScheduleCapture({ dias, horarios, onSave, onRemove, lang
             <button className="btn" onClick={agregarFila}>{t('overtime.addRow')}</button>
             <button
               className="btn danger"
-              onClick={() => {
+              onClick={() => pedirConfirmacion(() => {
                 onRemove(seleccionado)
                 setSeleccionado(null)
-              }}
+              })}
             >
               {t('overtime.removeSchedule')}
             </button>
@@ -282,6 +301,7 @@ export default function ScheduleCapture({ dias, horarios, onSave, onRemove, lang
 }
 
 function PendienteFila({ p, dias, lang, t, onAsignar, onDescartar }) {
+  const pedirConfirmacion = useConfirm()
   const [fecha, setFecha] = useState(dias[0])
   const horas = minAHoras(totalesHorario(p.rows).trabajado)
   return (
@@ -295,7 +315,7 @@ function PendienteFila({ p, dias, lang, t, onAsignar, onDescartar }) {
           ))}
         </select>
         <button className="btn primary" onClick={() => onAsignar(fecha)}>{t('overtime.assign')}</button>
-        <button className="btn danger" onClick={onDescartar}>{t('overtime.discard')}</button>
+        <button className="btn danger" onClick={() => pedirConfirmacion(onDescartar)}>{t('overtime.discard')}</button>
       </div>
     </div>
   )

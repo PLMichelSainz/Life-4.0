@@ -4,8 +4,9 @@ import { useLanguage } from '../../context/LanguageContext'
 import { addDays, formatShort, formatLong, dayName, todayISO, parseISODate, startOfWeekMonday } from '../../utils/dates'
 import { calcularSemana, formatMXN, LIMITE_LEGAL_SEMANAL } from '../../utils/overtime'
 import { indiceCatorcena, catorcenaPorIndice } from '../../utils/payroll'
-import { totalesHorario, minAHoras, META_SEMANAL_HRS } from '../../utils/schedule'
+import { totalesHorario, minAHoras, fmtDuracion, META_SEMANAL_HRS } from '../../utils/schedule'
 import ScheduleCapture from './ScheduleCapture'
+import DraftNumber from '../../components/DraftNumber'
 
 const redondear2 = (n) => Math.round(n * 100) / 100
 
@@ -21,11 +22,12 @@ function BloqueSemana({ titulo, weekStart, horas, onChange, undertime, onUnderti
     if (!h) continue
     nDias += 1
     const x = totalesHorario(h.rows)
-    openMin += x.open
+    openMin += x.open + x.train // Client Training cuenta como tiempo trabajado
     extMin += x.ext
   }
-  const totalSched = minAHoras(openMin + extMin)
-  const diff = redondear2(totalSched - META_SEMANAL_HRS)
+  const totalMin = openMin + extMin
+  const totalSched = minAHoras(totalMin)
+  const diffMin = totalMin - Math.round(META_SEMANAL_HRS * 60)
 
   return (
     <div className="card">
@@ -48,26 +50,24 @@ function BloqueSemana({ titulo, weekStart, horas, onChange, undertime, onUnderti
             <div style={{ display: 'flex', gap: 8 }}>
               <div style={{ width: 96 }}>
                 <label>{t('overtime.hoursLabel')}</label>
-                <input
-                  type="number"
+                <DraftNumber
                   min="0"
                   max="24"
                   step="0.01"
-                  value={horas[i] === 0 ? '' : horas[i]}
+                  value={horas[i]}
                   placeholder="0"
-                  onChange={(e) => onChange(i, Number(e.target.value) || 0)}
+                  onCommit={(n) => onChange(i, n)}
                 />
               </div>
               <div style={{ width: 96 }}>
                 <label>{t('overtime.undertime')}</label>
-                <input
-                  type="number"
+                <DraftNumber
                   min="0"
                   max="24"
                   step="0.01"
-                  value={!undertime[i] ? '' : undertime[i]}
+                  value={undertime[i] || 0}
                   placeholder="0"
-                  onChange={(e) => onUndertime(i, Number(e.target.value) || 0)}
+                  onCommit={(n) => onUndertime(i, n)}
                 />
               </div>
             </div>
@@ -120,26 +120,30 @@ function BloqueSemana({ titulo, weekStart, horas, onChange, undertime, onUnderti
           <div className="grid cols-3">
             <div className="stat">
               <div className="label">{t('overtime.worked')}</div>
-              <div className="value mono">{minAHoras(openMin)} {t('overtime.hrs')}</div>
+              <div className="value mono">{fmtDuracion(openMin)}</div>
             </div>
             <div className="stat">
               <div className="label">{t('overtime.extraHrs')}</div>
-              <div className="value mono accent">{minAHoras(extMin)} {t('overtime.hrs')}</div>
+              <div className="value mono accent">{fmtDuracion(extMin)}</div>
             </div>
             <div className="stat" style={{ borderColor: 'var(--accent)' }}>
               <div className="label">{t('overtime.totalSched')}</div>
-              <div className="value mono accent">{totalSched} {t('overtime.hrs')}</div>
+              <div className="value mono accent">{fmtDuracion(totalMin)}</div>
             </div>
           </div>
-          <div className="grid cols-2" style={{ marginTop: 10 }}>
+          <div className="grid cols-3" style={{ marginTop: 10 }}>
+            <div className="stat">
+              <div className="label">{t('overtime.totalDecimal')}</div>
+              <div className="value mono">{totalSched} {t('overtime.hrs')}</div>
+            </div>
             <div className="stat">
               <div className="label">{t('overtime.target')}</div>
               <div className="value mono">{META_SEMANAL_HRS} {t('overtime.hrs')}</div>
             </div>
-            <div className="stat" style={{ borderColor: diff === 0 ? 'var(--online)' : 'var(--danger)' }}>
+            <div className="stat" style={{ borderColor: diffMin === 0 ? 'var(--online)' : 'var(--danger)' }}>
               <div className="label">{t('overtime.diff')}</div>
-              <div className="value mono" style={{ color: diff === 0 ? 'var(--online)' : 'var(--danger)' }}>
-                {diff === 0 ? t('overtime.matchesTarget') : `${diff > 0 ? '+' : ''}${diff} ${t('overtime.hrs')}`}
+              <div className="value mono" style={{ color: diffMin === 0 ? 'var(--online)' : 'var(--danger)', fontSize: '0.95rem' }}>
+                {diffMin === 0 ? t('overtime.matchesTarget') : `${diffMin > 0 ? '+' : ''}${fmtDuracion(diffMin)}`}
               </div>
             </div>
           </div>
@@ -178,7 +182,7 @@ export default function OvertimeCalculator() {
     setHorario(fechaISO, rows)
     const semana = startOfWeekMonday(fechaISO)
     const idx = Math.round((parseISODate(fechaISO) - parseISODate(semana)) / 86400000)
-    setHorasDia(semana, idx, minAHoras(totalesHorario(rows).trabajado))
+    setHorasDia(semana, idx, Math.round((totalesHorario(rows).trabajado / 60) * 10000) / 10000)
   }
 
   const totalCatorcena = resultado1.total_pago + resultado2.total_pago

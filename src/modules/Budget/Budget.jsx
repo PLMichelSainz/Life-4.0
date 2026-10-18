@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useConfirm } from '../../components/ConfirmDialog'
 import { useAppData } from '../../context/AppDataContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { formatMXN } from '../../utils/overtime'
@@ -8,6 +9,7 @@ import { indiceCatorcenaPago, catorcenaPagoPorIndice } from '../../utils/payroll
 const TIPO_KEY = { credito: 'credito', debito: 'debito', cash: 'cash' }
 
 function CuentaFila({ item, t, onUpdate, onRemove }) {
+  const pedirConfirmacion = useConfirm()
   const [editando, setEditando] = useState(false)
   const [concepto, setConcepto] = useState(item.concepto)
   const [monto, setMonto] = useState(String(item.monto))
@@ -33,7 +35,7 @@ function CuentaFila({ item, t, onUpdate, onRemove }) {
         <button className="btn" style={{ flex: 1, padding: '5px 8px', fontSize: '0.72rem' }} onClick={() => setEditando((v) => !v)}>
           {editando ? t('common.close') : t('common.edit')}
         </button>
-        <button className="btn danger" style={{ flex: 1, padding: '5px 8px', fontSize: '0.72rem' }} onClick={() => onRemove(item.id)}>
+        <button className="btn danger" style={{ flex: 1, padding: '5px 8px', fontSize: '0.72rem' }} onClick={() => pedirConfirmacion(() => onRemove(item.id))}>
           {t('common.delete')}
         </button>
       </div>
@@ -63,6 +65,7 @@ function CuentaFila({ item, t, onUpdate, onRemove }) {
 }
 
 function IngresoFila({ item, t, onUpdate, onRemove }) {
+  const pedirConfirmacion = useConfirm()
   const [editando, setEditando] = useState(false)
   const [concepto, setConcepto] = useState(item.concepto)
   const [monto, setMonto] = useState(String(item.monto))
@@ -83,7 +86,7 @@ function IngresoFila({ item, t, onUpdate, onRemove }) {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn" onClick={() => setEditando((v) => !v)}>{editando ? t('common.close') : t('common.edit')}</button>
-          <button className="btn danger" onClick={() => onRemove(item.id)}>{t('common.delete')}</button>
+          <button className="btn danger" onClick={() => pedirConfirmacion(() => onRemove(item.id))}>{t('common.delete')}</button>
         </div>
       </div>
       {editando && (
@@ -110,6 +113,7 @@ function sumaPagos(pagosPeriodo) {
 }
 
 function GastoFijoFila({ gasto, t, periodo, onUpdate, onRemove, onPagar, onEliminarPago }) {
+  const pedirConfirmacion = useConfirm()
   const [editando, setEditando] = useState(false)
   const [concepto, setConcepto] = useState(gasto.concepto)
   const [monto, setMonto] = useState(String(gasto.monto))
@@ -151,7 +155,7 @@ function GastoFijoFila({ gasto, t, periodo, onUpdate, onRemove, onPagar, onElimi
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn" onClick={() => setEditando((v) => !v)}>{editando ? t('common.close') : t('common.edit')}</button>
-          <button className="btn danger" onClick={() => onRemove(gasto.id)}>{t('common.delete')}</button>
+          <button className="btn danger" onClick={() => pedirConfirmacion(() => onRemove(gasto.id))}>{t('common.delete')}</button>
         </div>
       </div>
 
@@ -194,7 +198,7 @@ function GastoFijoFila({ gasto, t, periodo, onUpdate, onRemove, onPagar, onElimi
           {pagosLista.map((p) => (
             <div className="day-row" key={p.id}>
               <div className="value mono" style={{ fontSize: '0.85rem' }}>{formatMXN(p.monto)}</div>
-              <button className="btn danger" style={{ padding: '4px 10px', fontSize: '0.72rem' }} onClick={() => onEliminarPago(gasto.id, periodo, p.id)}>
+              <button className="btn danger" style={{ padding: '4px 10px', fontSize: '0.72rem' }} onClick={() => pedirConfirmacion(() => onEliminarPago(gasto.id, periodo, p.id))}>
                 {t('common.delete')}
               </button>
             </div>
@@ -219,10 +223,11 @@ export default function Budget() {
   const {
     cuentas, addCuenta, updateCuenta, removeCuenta,
     ingresos, addIngreso, updateIngreso, removeIngreso,
-    gastosFijos, addGastoFijo, updateGastoFijo, removeGastoFijo, pagarGastoFijo, eliminarPagoGastoFijo,
+    gastosFijos, addGastoFijo, updateGastoFijo, removeGastoFijo, pagarGastoFijo, eliminarPagoGastoFijo, resetCuentas, resetIngresos, resetPagosGastosFijos,
     productos,
   } = useAppData()
   const { t, lang } = useLanguage()
+  const pedirConfirmacion = useConfirm()
   // El "periodo" que resetea los gastos fijos ahora es la catorcena de pago
   // real (mismo sistema que Transporte), no el mes calendario: así el monto
   // pagado vuelve a $0 justo cuando llega tu siguiente día de pago.
@@ -343,7 +348,16 @@ export default function Budget() {
 
       {/* ---- Dinero actual ---- */}
       <div className="card">
-        <p className="card-title">{t('budget.currentMoneyTitle')}</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
+          <p className="card-title">{t('budget.currentMoneyTitle')}</p>
+          <button
+            className="btn"
+            disabled={cuentas.length === 0}
+            onClick={() => pedirConfirmacion(resetCuentas, { mensaje: t('budget.resetAccountsConfirm'), boton: t('budget.resetBtn') })}
+          >
+            {t('budget.resetBtn')}
+          </button>
+        </div>
         <p className="card-sub">{t('budget.currentMoneyDesc')} {t('budget.availableNowDesc')}</p>
         <div className="stat" style={{ marginBottom: 14, borderColor: 'var(--accent)' }}>
           <div className="label">{t('budget.totalCurrentMoney')}</div>
@@ -382,7 +396,16 @@ export default function Budget() {
 
       {/* ---- Ingresos ---- */}
       <div className="card">
-        <p className="card-title">{t('budget.incomeTitle')}</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
+          <p className="card-title">{t('budget.incomeTitle')}</p>
+          <button
+            className="btn"
+            disabled={ingresos.length === 0}
+            onClick={() => pedirConfirmacion(resetIngresos, { mensaje: t('budget.resetIncomeConfirm'), boton: t('budget.resetBtn') })}
+          >
+            {t('budget.resetBtn')}
+          </button>
+        </div>
         <p className="card-sub">{t('budget.incomeDesc')}</p>
         <div className="stat" style={{ marginBottom: 14, borderColor: 'var(--accent)' }}>
           <div className="label">{t('budget.totalIncome')}</div>
@@ -409,7 +432,16 @@ export default function Budget() {
 
       {/* ---- Gastos fijos ---- */}
       <div className="card">
-        <p className="card-title">{t('budget.fixedExpensesTitle')}</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
+          <p className="card-title">{t('budget.fixedExpensesTitle')}</p>
+          <button
+            className="btn"
+            disabled={gastosFijos.length === 0}
+            onClick={() => pedirConfirmacion(() => resetPagosGastosFijos(periodo), { mensaje: t('budget.resetFixedConfirm'), boton: t('budget.resetBtn') })}
+          >
+            {t('budget.resetBtn')}
+          </button>
+        </div>
         <p className="card-sub">
           {t('budget.fixedExpensesDesc')} · se resetea el {formatShort(catorcenaActual.siguientePago, lang)}
         </p>

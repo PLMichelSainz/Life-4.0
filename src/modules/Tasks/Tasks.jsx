@@ -1,14 +1,16 @@
 import { useState, useMemo } from 'react'
+import { useConfirm } from '../../components/ConfirmDialog'
 import { useAppData } from '../../context/AppDataContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { formatShort } from '../../utils/dates'
 
 const PRIORIDAD_ORDEN = { alta: 0, media: 1, baja: 2 }
-const PRIORIDAD_COLOR = { alta: 'var(--danger)', media: '#e0a030', baja: 'var(--text-muted)' }
-const PRIORIDAD_ICONO = { alta: '🔴', media: '🟠', baja: '⚪' }
+const PRIORIDAD_COLOR = { alta: 'var(--danger)', media: '#e0a030', baja: 'var(--online)' }
+const PRIORIDAD_ICONO = { alta: '🔴', media: '🟠', baja: '🟢' }
 const PRIORIDAD_KEY = { alta: 'priorityHigh', media: 'priorityMedium', baja: 'priorityLow' }
 
 function TareaFila({ p, t, lang, onUpdate, onRemove, onToggle }) {
+  const pedirConfirmacion = useConfirm()
   const [editando, setEditando] = useState(false)
   const [f, setF] = useState({
     titulo: p.titulo, prioridad: p.prioridad, categoria: p.categoria, fechaLimite: p.fechaLimite, notas: p.notas,
@@ -50,7 +52,7 @@ function TareaFila({ p, t, lang, onUpdate, onRemove, onToggle }) {
             {completado ? t('tasks.markPending') : t('tasks.markDone')}
           </button>
           <button className="btn" onClick={() => setEditando((v) => !v)}>{editando ? t('common.close') : t('common.edit')}</button>
-          <button className="btn danger" onClick={() => onRemove(p.id)}>{t('common.delete')}</button>
+          <button className="btn danger" onClick={() => pedirConfirmacion(() => onRemove(p.id))}>{t('common.delete')}</button>
         </div>
       </div>
 
@@ -65,7 +67,7 @@ function TareaFila({ p, t, lang, onUpdate, onRemove, onToggle }) {
             <select value={f.prioridad} onChange={(e) => setF({ ...f, prioridad: e.target.value })}>
               <option value="alta">🔴 {t('tasks.priorityHigh')}</option>
               <option value="media">🟠 {t('tasks.priorityMedium')}</option>
-              <option value="baja">⚪ {t('tasks.priorityLow')}</option>
+              <option value="baja">🟢 {t('tasks.priorityLow')}</option>
             </select>
           </div>
           <div style={{ width: 140 }}>
@@ -123,7 +125,7 @@ export default function Tasks() {
             <select value={f.prioridad} onChange={(e) => setF({ ...f, prioridad: e.target.value })}>
               <option value="alta">🔴 {t('tasks.priorityHigh')}</option>
               <option value="media">🟠 {t('tasks.priorityMedium')}</option>
-              <option value="baja">⚪ {t('tasks.priorityLow')}</option>
+              <option value="baja">🟢 {t('tasks.priorityLow')}</option>
             </select>
           </div>
           <div style={{ width: 140 }}>

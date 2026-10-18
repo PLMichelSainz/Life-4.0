@@ -49,6 +49,10 @@ export function formatLong(iso, locale = 'es') {
   if (locale === 'en') {
     return `${dayName(iso, false, locale)}, ${meses[d.getMonth()]} ${String(d.getDate()).padStart(2, '0')}, ${d.getFullYear()}`
   }
+  if (locale === 'fr') {
+    const largos = dict(locale).monthsLong || meses
+    return `${dayName(iso, false, locale)} ${d.getDate()} ${largos[d.getMonth()]} ${d.getFullYear()}`
+  }
   return `${dayName(iso, false, locale)} ${String(d.getDate()).padStart(2, '0')} de ${meses[d.getMonth()]} de ${d.getFullYear()}`
 }
 

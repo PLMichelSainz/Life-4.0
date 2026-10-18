@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useConfirm } from '../../components/ConfirmDialog'
 import { useAppData } from '../../context/AppDataContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { formatMXN } from '../../utils/overtime'
@@ -13,6 +14,7 @@ function calcularDeuda(deuda) {
 }
 
 function TarjetaDeuda({ deuda, t, lang }) {
+  const pedirConfirmacion = useConfirm()
   const { addPagoDeuda, removePagoDeuda, removeDeuda, updateDeuda } = useAppData()
   const [montoPago, setMontoPago] = useState('')
   const [fechaPago, setFechaPago] = useState(todayISO())
@@ -54,7 +56,7 @@ function TarjetaDeuda({ deuda, t, lang }) {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn" onClick={() => setEditando((v) => !v)}>{editando ? t('common.close') : t('common.edit')}</button>
-          <button className="btn danger" onClick={() => removeDeuda(deuda.id)}>{t('common.delete')}</button>
+          <button className="btn danger" onClick={() => pedirConfirmacion(() => removeDeuda(deuda.id))}>{t('common.delete')}</button>
         </div>
       </div>
 
@@ -134,7 +136,7 @@ function TarjetaDeuda({ deuda, t, lang }) {
                       <div className="day-name mono">{formatMXN(p.monto)}</div>
                       <div className="day-date">{formatShort(p.fecha, lang)}</div>
                     </div>
-                    <button className="btn danger" onClick={() => removePagoDeuda(deuda.id, p.id)}>{t('common.remove')}</button>
+                    <button className="btn danger" onClick={() => pedirConfirmacion(() => removePagoDeuda(deuda.id, p.id))}>{t('common.remove')}</button>
                   </div>
                 ))}
             </div>

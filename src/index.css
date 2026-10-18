@@ -383,3 +383,25 @@ label { font-size: 0.72rem; color: var(--text-muted); display: block; margin-bot
   .card { padding: 15px 16px; }
   .stat .value { font-size: 1.02rem; }
 }
+
+/* ---------- Diálogo de confirmación ---------- */
+.confirm-backdrop {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0, 0, 0, .55);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+}
+.confirm-box { width: 100%; max-width: 380px; margin: 0; box-shadow: var(--shadow-3); }
+.confirm-box .btn.danger { background: var(--danger); border-color: var(--danger); color: #fff; font-weight: 600; }
+
+/* ---------- Casillas de días (capturas de horario) ---------- */
+.slots-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.slots-grid .stat { padding: 8px 9px; min-width: 0; }
+@media (max-width: 780px) { .slots-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 420px) { .slots-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* Celulares angostos: las filas con varios campos pasan a otra línea en vez de desbordarse. */
+@media (max-width: 480px) {
+  .day-row { flex-wrap: wrap; }
+  .confirm-box { max-width: 100%; }
+}

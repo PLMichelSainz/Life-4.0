@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useConfirm } from '../../components/ConfirmDialog'
 import { useAppData } from '../../context/AppDataContext'
 import { formatMXN } from '../../utils/overtime'
 import { calcularISRPeriodo } from '../../utils/isr'
@@ -6,7 +7,7 @@ import { calcularIMSSObreroPeriodo } from '../../utils/imss'
 
 const DIAS_CATORCENA = 14
 const SEMANAS_CATORCENA = 2
-const JORNADAS_WH = [35, 40, 42, 46]
+const JORNADAS_WH = [30, 35, 40, 42, 46]
 
 // Deducciones que no tienen una tasa fija oficial (dependen del crédito, del
 // juzgado o del contrato colectivo de cada quien), solo se muestran como
@@ -24,6 +25,7 @@ function calcularDeduccionExtra(deduccion, bruto) {
 }
 
 export default function SalaryRates() {
+  const pedirConfirmacion = useConfirm()
   const { tarifaPorHora, setTarifaPorHora, otrasDeducciones, addDeduccion, removeDeduccion } = useAppData()
   const [tarifaInput, setTarifaInput] = useState(String(tarifaPorHora))
   const [nombreDed, setNombreDed] = useState('')
@@ -165,7 +167,7 @@ export default function SalaryRates() {
                   <div className="day-name">{d.nombre}</div>
                   <div className="day-date">{d.tipo === 'porcentaje' ? `${d.valor}% del bruto` : formatMXN(d.valor)}</div>
                 </div>
-                <button className="btn danger" onClick={() => removeDeduccion(d.id)}>Quitar</button>
+                <button className="btn danger" onClick={() => pedirConfirmacion(() => removeDeduccion(d.id))}>Quitar</button>
               </div>
             ))}
           </div>

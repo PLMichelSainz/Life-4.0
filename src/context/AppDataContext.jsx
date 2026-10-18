@@ -235,6 +235,22 @@ export function AppDataProvider({ children }) {
   function addCuenta(concepto, monto, tipo = 'debito') {
     setCuentas((prev) => [...prev, { id: crypto.randomUUID(), concepto, monto: Number(monto) || 0, tipo }])
   }
+  // Reset de secciones de Presupuesto: conservan los conceptos, solo limpian montos/pagos.
+  function resetCuentas() {
+    setCuentas((prev) => prev.map((c) => ({ ...c, monto: 0 })))
+  }
+  function resetIngresos() {
+    setIngresos((prev) => prev.map((i) => ({ ...i, monto: 0 })))
+  }
+  function resetPagosGastosFijos(periodo) {
+    setGastosFijos((prev) =>
+      prev.map((g) => {
+        const { [periodo]: _quitado, ...resto } = g.pagos || {}
+        return { ...g, pagos: resto }
+      })
+    )
+  }
+
   function updateCuenta(id, cambios) {
     setCuentas((prev) => prev.map((c) => (c.id === id ? { ...c, ...cambios } : c)))
   }
@@ -387,16 +403,19 @@ export function AppDataProvider({ children }) {
     addCuenta,
     updateCuenta,
     removeCuenta,
+    resetCuentas,
     ingresos,
     addIngreso,
     updateIngreso,
     removeIngreso,
+    resetIngresos,
     gastosFijos,
     addGastoFijo,
     updateGastoFijo,
     removeGastoFijo,
     pagarGastoFijo,
     eliminarPagoGastoFijo,
+    resetPagosGastosFijos,
     productos,
     addProducto,
     updateProducto,
