@@ -32,7 +32,7 @@ export const fr = {
     dark: '☾ Sombre',
     light: '☀ Clair',
   },
-  status: { sync: 'Sync', offline: 'Hors ligne' },
+  status: { sync: 'Sync', offline: 'Hors ligne', syncing: 'Synchronisation…', synced: 'Synchronisé' },
   footer: 'Données synchronisées dans le nuage : elles se mettent à jour automatiquement sur chaque appareil où vous êtes connecté.',
   auth: {
     missingTitle: 'Supabase n’est pas encore configuré',
@@ -141,6 +141,9 @@ export const fr = {
     matchesTarget: 'Objectif atteint',
     schedTrain: 'Client Training / NPS',
     totalDecimal: 'Total (décimal)',
+    pass: (p, m) => `passe ${p}/${m}`,
+    checkGaps: (d) => `${d} : la lecture n’est pas complète (écarts ou lignes qui se chevauchent). Vérifiez la journée marquée d’un ⚠ et ajoutez ce qui manque.`,
+    reviewDay: 'À vérifier : il y a des écarts ou des lignes qui se chevauchent',
     overlapWarn: (a, b, m) => `Lignes qui se chevauchent de ${m} min entre ${a} et ${b} : une ligne est peut-être en double.`,
   },
   payroll: {

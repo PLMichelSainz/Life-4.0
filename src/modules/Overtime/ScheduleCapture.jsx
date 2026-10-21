@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useConfirm } from '../../components/ConfirmDialog'
 import { dayName, formatShort, formatLong } from '../../utils/dates'
-import { leerImagen, terminarOcr } from '../../utils/scheduleOcr'
+import { leerHorarioImagen, terminarOcr } from '../../utils/scheduleOcr'
 import {
-  CLASES, parseHorarioTexto, totalesHorario, huecos, solapes, fmtHora, fmtDuracion, minAHHMM, hhmmAMin, minAHoras,
+  CLASES, totalesHorario, huecos, solapes, fmtHora, fmtDuracion, minAHHMM, hhmmAMin, minAHoras,
 } from '../../utils/schedule'
 
 function ResumenTiempos({ x, t }) {
@@ -55,10 +55,11 @@ export default function ScheduleCapture({ dias, horarios, onSave, onRemove, lang
     if (!imgs.length || procesando) return
     setMensajes([])
     for (let i = 0; i < imgs.length; i++) {
-      setProcesando({ i: i + 1, n: imgs.length })
+      setProcesando({ i: i + 1, n: imgs.length, p: 1, m: 1 })
       try {
-        const texto = await leerImagen(imgs[i])
-        const { fecha, filas } = parseHorarioTexto(texto)
+        const { fecha, filas, completa } = await leerHorarioImagen(imgs[i], (p, m) =>
+          setProcesando({ i: i + 1, n: imgs.length, p, m })
+        )
         if (!filas.length) {
           addMsg('error', `${t('overtime.noRows')} ${imgs[i].name || ''}`)
           continue
@@ -68,6 +69,7 @@ export default function ScheduleCapture({ dias, horarios, onSave, onRemove, lang
           onSave(fecha, rows)
           setSeleccionado(fecha)
           addMsg('ok', t('overtime.loadedDay')(formatLong(fecha, lang)))
+          if (!completa) addMsg('error', t('overtime.checkGaps')(formatShort(fecha, lang)))
         } else {
           setPendientes((p) => [...p, { id: crypto.randomUUID(), rows }])
         }
@@ -123,6 +125,10 @@ export default function ScheduleCapture({ dias, horarios, onSave, onRemove, lang
   function quitarFila(idx) {
     onSave(seleccionado, sel.rows.filter((_, i) => i !== idx))
   }
+  function rellenarHueco(g, clase) {
+    const rows = [...sel.rows, { c: clase, s: g.desde, e: g.hasta }].sort((a, b) => a.s - b.s)
+    onSave(seleccionado, rows)
+  }
   function agregarFila() {
     const ultimo = sel.rows.length ? Math.max(...sel.rows.map((r) => r.e)) : 8 * 60
     onSave(seleccionado, [...sel.rows, { c: 'open', s: ultimo, e: ultimo + 30 }])
@@ -155,7 +161,11 @@ export default function ScheduleCapture({ dias, horarios, onSave, onRemove, lang
             e.target.value = ''
           }}
         />
-        {procesando && <span className="pill current">{t('overtime.readingImg')(procesando.i, procesando.n)}</span>}
+        {procesando && (
+          <span className="pill current">
+            {t('overtime.readingImg')(procesando.i, procesando.n)} · {t('overtime.pass')(procesando.p, procesando.m)}
+          </span>
+        )}
       </div>
 
       {mensajes.map((m) => (
@@ -190,6 +200,7 @@ export default function ScheduleCapture({ dias, horarios, onSave, onRemove, lang
         {dias.map((f) => {
           const h = horarios[f]
           const minTrab = h ? totalesHorario(h.rows).trabajado : null
+          const revisar = h ? huecos(h.rows).length + solapes(h.rows).length > 0 : false
           return (
             <button
               key={f}
@@ -198,11 +209,14 @@ export default function ScheduleCapture({ dias, horarios, onSave, onRemove, lang
               style={{
                 textAlign: 'left',
                 cursor: 'pointer',
-                borderColor: seleccionado === f ? 'var(--accent)' : h ? 'var(--online)' : undefined,
+                borderColor: seleccionado === f ? 'var(--accent)' : revisar ? 'var(--danger)' : h ? 'var(--online)' : undefined,
                 color: 'inherit',
               }}
             >
-              <div className="label">{dayName(f, true, lang)} · {formatShort(f, lang)}</div>
+              <div className="label">
+                {dayName(f, true, lang)} · {formatShort(f, lang)}
+                {revisar && <span style={{ color: 'var(--danger)' }} title={t('overtime.reviewDay')}> ⚠</span>}
+              </div>
               <div className="value mono" style={{ fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
                 {minTrab === null ? '—' : fmtDuracion(minTrab)}
               </div>
@@ -232,9 +246,17 @@ export default function ScheduleCapture({ dias, horarios, onSave, onRemove, lang
           </p>
 
           {selHuecos.map((g) => (
-            <p key={g.desde} className="card-sub" style={{ color: 'var(--danger)', margin: '0 0 4px' }}>
-              {t('overtime.gapWarn')(fmtHora(g.desde), fmtHora(g.hasta), g.min)}
-            </p>
+            <div key={g.desde} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', margin: '0 0 6px' }}>
+              <span className="card-sub" style={{ color: 'var(--danger)', margin: 0 }}>
+                {t('overtime.gapWarn')(fmtHora(g.desde), fmtHora(g.hasta), g.min)}
+              </span>
+              <button className="btn" style={{ padding: '3px 9px', fontSize: '0.72rem' }} onClick={() => rellenarHueco(g, 'train')}>
+                + {t('overtime.schedTrain')}
+              </button>
+              <button className="btn" style={{ padding: '3px 9px', fontSize: '0.72rem' }} onClick={() => rellenarHueco(g, 'open')}>
+                + Open
+              </button>
+            </div>
           ))}
 
           {selSolapes.map((g) => (

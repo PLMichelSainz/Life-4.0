@@ -27,19 +27,29 @@ export function clasificar(textoActividad) {
   return 'other'
 }
 
+// El lector confunde a veces "0" con "O" y "1" con "l"/"I": se corrige solo dentro de una hora.
+const limpiarDigitos = (txt) => String(txt).replace(/[Oo]/g, '0').replace(/[Il]/g, '1')
+
 function aMinutos(h, m, ampm) {
-  let hh = Number(h) % 12
+  const hora = Number(limpiarDigitos(h))
+  const min = Number(limpiarDigitos(m))
+  if (!(hora >= 1 && hora <= 12) || !(min >= 0 && min <= 59)) return null // lectura basura: se descarta
+  let hh = hora % 12
   if (/p/i.test(ampm)) hh += 12
-  return hh * 60 + Number(m)
+  return hh * 60 + min
 }
 
-const RE_HORA = /(\d{1,2}):(\d{2})\s*([AP])\.?\s*M/gi
+// separador de la hora: ":" normalmente, pero el lector a veces devuelve ".", "-" o ";"
+const RE_HORA = /([0-9OoIl]{1,2})[:.\-;]([0-9OoIl]{2})\s*([AaPp])\.?\s*[MmNn]/g
+// Líneas que parecen una actividad con hora aunque no se haya podido leer completa
+const RE_PARECE_ACTIVIDAD = /open|break|lunch|wellness|train|trng|extension|schedule|under\s?time|nps/i
 
 // Devuelve { fecha: 'YYYY-MM-DD' | null, filas: [{ c, s, e, raw }] }
 export function parseHorarioTexto(texto) {
   const lineas = String(texto || '').split(/\r?\n/)
   let fecha = null
   const filas = []
+  let dudosas = 0 // líneas que parecían una actividad con hora pero no se pudieron leer completas
 
   for (const linea of lineas) {
     if (!fecha) {
@@ -51,14 +61,19 @@ export function parseHorarioTexto(texto) {
       }
     }
     const horas = [...linea.matchAll(RE_HORA)]
-    if (horas.length < 2) continue
-    const actividad = linea.slice(0, horas[0].index)
-    const s = aMinutos(horas[0][1], horas[0][2], horas[0][3])
-    let e = aMinutos(horas[1][1], horas[1][2], horas[1][3])
+      .map((m) => ({ m, min: aMinutos(m[1], m[2], m[3]) }))
+      .filter((x) => x.min !== null)
+    if (horas.length < 2) {
+      if (RE_PARECE_ACTIVIDAD.test(linea) && /[AaPp]\s*[Mm]/.test(linea) && /\d/.test(linea)) dudosas += 1
+      continue
+    }
+    const actividad = linea.slice(0, horas[0].m.index)
+    const s = horas[0].min
+    let e = horas[1].min
     if (e <= s) e += 24 * 60 // cruza la medianoche
     filas.push({ c: clasificar(actividad), s, e, raw: actividad.trim() })
   }
-  return { fecha, filas }
+  return { fecha, filas, dudosas }
 }
 
 export function totalesHorario(filas) {
@@ -76,6 +91,65 @@ export function huecos(filas) {
     if (gap > 0) out.push({ desde: ord[i - 1].e, hasta: ord[i].s, min: gap })
   }
   return out
+}
+
+const PRIORIDAD_CLASE = ['train', 'ext', 'open', 'ut', 'break', 'other']
+
+/**
+ * Combina las filas leídas en varias pasadas de la MISMA imagen. Cada fila (mismo inicio y fin)
+ * recibe un voto por pasada que la leyó; si hay filas que se encíman por una lectura equivocada,
+ * se queda la combinación sin encimes con más votos (y, a igualdad, la que cubre más tiempo).
+ * Así, una fila que una pasada se saltó se recupera de otra.
+ */
+export function fusionarPasadas(pasadas) {
+  const mapa = new Map()
+  for (const filas of pasadas) {
+    const vistas = new Set()
+    for (const f of filas) {
+      const k = `${f.s}-${f.e}`
+      if (vistas.has(k)) continue
+      vistas.add(k)
+      const x = mapa.get(k) || { s: f.s, e: f.e, votos: 0, clases: {} }
+      x.votos += 1
+      x.clases[f.c] = (x.clases[f.c] || 0) + 1
+      mapa.set(k, x)
+    }
+  }
+  const cand = [...mapa.values()].map((x) => {
+    const c = Object.keys(x.clases).sort(
+      (a, b) => x.clases[b] - x.clases[a] || PRIORIDAD_CLASE.indexOf(a) - PRIORIDAD_CLASE.indexOf(b)
+    )[0]
+    return { s: x.s, e: x.e, c, peso: x.votos * 100000 + (x.e - x.s) }
+  })
+  cand.sort((a, b) => a.e - b.e || a.s - b.s)
+  // selección de intervalos sin encimes con peso máximo (programación dinámica)
+  const n = cand.length
+  const mejor = new Array(n + 1).fill(0)
+  const previo = new Array(n).fill(-1)
+  for (let i = 0; i < n; i++) {
+    let j = i - 1
+    while (j >= 0 && cand[j].e > cand[i].s) j--
+    previo[i] = j
+  }
+  const tomar = new Array(n).fill(false)
+  for (let i = 1; i <= n; i++) {
+    const con = cand[i - 1].peso + mejor[previo[i - 1] + 1]
+    if (con >= mejor[i - 1]) {
+      mejor[i] = con
+      tomar[i - 1] = true
+    } else {
+      mejor[i] = mejor[i - 1]
+      tomar[i - 1] = false
+    }
+  }
+  const out = []
+  for (let i = n; i > 0; ) {
+    if (tomar[i - 1] && cand[i - 1].peso + mejor[previo[i - 1] + 1] === mejor[i]) {
+      out.push({ c: cand[i - 1].c, s: cand[i - 1].s, e: cand[i - 1].e })
+      i = previo[i - 1] + 1
+    } else i -= 1
+  }
+  return out.sort((a, b) => a.s - b.s)
 }
 
 // Filas encimadas (p. ej. una fila leída dos veces): también hacen que la suma no cuadre.

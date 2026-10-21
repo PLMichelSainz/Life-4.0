@@ -136,6 +136,9 @@ export const translations = {
       matchesTarget: 'Coincide con la meta',
       schedTrain: 'Client Training / NPS',
       totalDecimal: 'Total (decimal)',
+      pass: (p, m) => `pasada ${p}/${m}`,
+      checkGaps: (d) => `${d}: la lectura no quedó completa (hay huecos o filas encimadas). Revisa el día marcado con ⚠ y rellena lo que falte.`,
+      reviewDay: 'Revisar este día: hay huecos o filas encimadas',
       overlapWarn: (a, b, m) => `Filas encimadas ${m} min entre ${a} y ${b}: puede haber una fila repetida.`,
     },
     payroll: {
@@ -389,7 +392,7 @@ export const translations = {
       dark: '☾ Dark',
       light: '☀ Light',
     },
-    status: { sync: 'Sync', offline: 'Offline' },
+    status: { sync: 'Sync', offline: 'Offline', syncing: 'Syncing…', synced: 'Synced' },
     footer: 'Data synced to the cloud: it updates automatically on every device where you sign in.',
     auth: {
       missingTitle: 'Supabase isn\u2019t configured yet',
@@ -491,6 +494,9 @@ export const translations = {
       matchesTarget: 'Matches the target',
       schedTrain: 'Client Training / NPS',
       totalDecimal: 'Total (decimal)',
+      pass: (p, m) => `pass ${p}/${m}`,
+      checkGaps: (d) => `${d}: the reading is not complete (gaps or overlapping rows). Check the day marked with ⚠ and fill in what is missing.`,
+      reviewDay: 'Review this day: there are gaps or overlapping rows',
       overlapWarn: (a, b, m) => `Rows overlap by ${m} min between ${a} and ${b}: a row may be duplicated.`,
     },
     payroll: {
