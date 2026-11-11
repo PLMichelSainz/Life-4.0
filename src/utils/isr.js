@@ -15,20 +15,18 @@ export const TARIFA_ISR_MENSUAL_2026 = [
   { limiteInferior: 425642.0, limiteSuperior: Infinity, cuotaFija: 133488.54, pctExcedente: 0.35 },
 ]
 
-// Subsidio al empleo mensual 2026 (Decreto DOF 31/dic/2025): 15.02 % de la UMA mensual
-// 2026 ($3,566.22) = $535.65 de feb. a dic. (enero fue transitorio: $536.21/$536.22),
-// para ingresos mensuales de hasta $11,492.66. En periodos menores a un mes el monto
-// se divide entre 30.4 y se multiplica por los días del periodo (ver factor abajo).
-export const SUBSIDIO_EMPLEO_MENSUAL_2026 = { tope: 11492.66, monto: 535.65 }
+// Subsidio al empleo mensual 2026 (DOF 01/05/2024): monto fijo hasta $406.83
+// para ingresos mensuales de hasta $9,081.00.
+export const SUBSIDIO_EMPLEO_MENSUAL_2026 = { tope: 9081.0, monto: 406.83 }
 
 // Días de referencia que usa el SAT para prorratear la tarifa mensual a
-// periodos distintos (semanal, decenal, quincenal, etc.).
+// periodos distintos (semanal, decenal, catorcenal, etc.).
 const DIAS_MES_REFERENCIA = 30.4
 
 /**
  * Calcula el ISR (bruto, subsidio y neto) para un ingreso gravable de un
  * periodo de `diasPeriodo` días, prorrateando la tarifa mensual oficial.
- * Para una quincena: calcularISRPeriodo(ingresoGravable, 15).
+ * Para una catorcena: calcularISRPeriodo(ingresoGravable, 14).
  */
 export function calcularISRPeriodo(ingresoGravable, diasPeriodo) {
   const ingreso = Math.max(0, Number(ingresoGravable) || 0)

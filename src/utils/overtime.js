@@ -1,11 +1,8 @@
 import { parseISODate } from './dates'
-import { TARIFA_HORA } from './config'
 
-// Tarifa por hora derivada del salario diario ($330 ÷ 9 h efectivas = $36.67). Las horas
-// 1..48 ya están cubiertas por el salario diario; solo el extra (doble/triple) se paga aparte.
-export const TARIFA_ORDINARIA = TARIFA_HORA
-export const TARIFA_DOBLE = TARIFA_ORDINARIA * 2
-export const TARIFA_TRIPLE = TARIFA_ORDINARIA * 3
+export const TARIFA_ORDINARIA = 52.76
+export const TARIFA_DOBLE = TARIFA_ORDINARIA * 2 // 105.52
+export const TARIFA_TRIPLE = TARIFA_ORDINARIA * 3 // 158.28
 
 export const LIMITE_LEGAL_SEMANAL = 48
 export const CAMBIO_JORNADA_FECHA = '2026-08-31'
@@ -35,7 +32,7 @@ export function jornadaOrdinaria(weekStartISO) {
  *    legal de horas extra; se marca como excedente y se paga a tarifa
  *    triple, mostrando una alerta.
  */
-export function calcularSemana(horasPorDia, weekStartISO, tarifa = TARIFA_ORDINARIA) {
+export function calcularSemana(horasPorDia, weekStartISO) {
   const total = horasPorDia.reduce((a, b) => a + (Number(b) || 0), 0)
 
   const ordinarias = Math.min(total, LIMITE_LEGAL_SEMANAL)
@@ -45,13 +42,12 @@ export function calcularSemana(horasPorDia, weekStartISO, tarifa = TARIFA_ORDINA
   const extraTriple = Math.min(Math.max(extras - 9, 0), 3)
   const excedente = Math.max(0, extras - 12)
 
-  const pagoOrdinario = ordinarias * tarifa // informativo: ya incluido en el salario diario
-  const pagoDoble = extraDoble * tarifa * 2
-  const pagoTriple = extraTriple * tarifa * 3
-  const pagoExcedente = excedente * tarifa * 3
+  const pagoOrdinario = ordinarias * TARIFA_ORDINARIA
+  const pagoDoble = extraDoble * TARIFA_DOBLE
+  const pagoTriple = extraTriple * TARIFA_TRIPLE
+  const pagoExcedente = excedente * TARIFA_TRIPLE
 
-  const pagoExtra = pagoDoble + pagoTriple + pagoExcedente // lo que se paga ADEMÁS del salario
-  const total_pago = pagoOrdinario + pagoExtra
+  const total_pago = pagoOrdinario + pagoDoble + pagoTriple + pagoExcedente
 
   return {
     total,
@@ -63,7 +59,6 @@ export function calcularSemana(horasPorDia, weekStartISO, tarifa = TARIFA_ORDINA
     pagoDoble,
     pagoTriple,
     pagoExcedente,
-    pagoExtra,
     total_pago,
     jornadaOrdinaria: jornadaOrdinaria(weekStartISO),
     excedeLimiteLegal: excedente > 0,
@@ -113,36 +108,4 @@ export function calcularRecarga(falta, comisionPct = 0.03) {
   const quedaRecargado = Math.round(montoTransferir * (1 - comisionPct) * 100) / 100
   const comision = Math.round((montoTransferir - quedaRecargado) * 100) / 100
   return { falta, montoTransferir, comision, quedaRecargado, tipoComision: 'porcentaje' }
-}
-
-/**
- * Pago de una semana (lunes..domingo) atribuible solo a los días desde..hasta
- * (índices 0..6) — necesario cuando una semana queda partida entre dos
- * quincenas. Las horas se acumulan en orden cronológico, así que las horas que
- * rebasan 48 se pagan en la quincena donde realmente ocurren:
- *   pago(días desde..hasta) = pago(acumulado hasta `hasta`) − pago(acumulado antes de `desde`).
- * Con desde = 0 y hasta = 6 equivale a calcularSemana.
- */
-export function calcularSemanaParcial(horasPorDia, weekStartISO, desde = 0, hasta = 6, tarifa = TARIFA_ORDINARIA) {
-  const prefijo = (n) => horasPorDia.map((h, i) => (i < n ? Number(h) || 0 : 0))
-  const completo = calcularSemana(prefijo(hasta + 1), weekStartISO, tarifa)
-  const antes = calcularSemana(prefijo(desde), weekStartISO, tarifa)
-  const r2 = (n) => Math.round(n * 10000) / 10000
-  const resta = (campo) => r2(completo[campo] - antes[campo])
-  const excedente = resta('excedente')
-  return {
-    total: resta('total'),
-    ordinarias: resta('ordinarias'),
-    extraDoble: resta('extraDoble'),
-    extraTriple: resta('extraTriple'),
-    excedente,
-    pagoOrdinario: resta('pagoOrdinario'),
-    pagoDoble: resta('pagoDoble'),
-    pagoTriple: resta('pagoTriple'),
-    pagoExcedente: resta('pagoExcedente'),
-    pagoExtra: resta('pagoExtra'),
-    total_pago: resta('total_pago'),
-    jornadaOrdinaria: completo.jornadaOrdinaria,
-    excedeLimiteLegal: excedente > 0,
-  }
 }

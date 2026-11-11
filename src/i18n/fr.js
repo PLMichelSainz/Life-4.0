@@ -1,7 +1,7 @@
 // Français canadien (Québec). Si falta una clave, la app usa el inglés como respaldo.
 export const fr = {
   sidebar: {
-    brand: 'Quincena',
+    brand: 'Catorcena',
     overtime: 'Heures supplémentaires',
     payroll: 'Périodes de paie',
     transport: 'Transport',
@@ -113,10 +113,7 @@ export const fr = {
     assignTo: 'Associer à',
     assign: 'Associer',
     discard: 'Écarter',
-    schedQuincena: 'Période de paie selon l’horaire',
-    weekN: (n) => `Semaine ${n}`,
-    rateInfo: (r, h) => `Taux horaire = salaire journalier ÷ ${h} h effectives = ${r}. Les heures jusqu’au plafond de 48 h sont déjà dans votre salaire; seules les heures supplémentaires (double et triple) sont payées en plus.`,
-    inSalary: 'incluses dans votre salaire',
+    schedCatorcena: 'Période de paie selon l’horaire',
     schedOpen: 'Open (travail)',
     schedExt: 'Extra (Schedule Extension)',
     schedTotal: 'Total travaillé',
@@ -153,7 +150,7 @@ export const fr = {
     currentBiweek: 'Période de paie actuelle',
     payDay: 'Jour de paie :',
     upcoming: 'Périodes de paie à venir et passées',
-    description: 'Période de paie bimensuelle : du 1er au 15, payée le 15; du 16 à la fin du mois, payée le dernier jour du mois.',
+    description: 'Période de paie de 14 jours (du lundi au dimanche); le paiement arrive 5 jours après la fin de la période. Référence : période du 27/07 au 09/08/2026, payée le 14/08/2026.',
     pay: 'Paie :',
   },
   transport: {
@@ -175,20 +172,9 @@ export const fr = {
     leftAfterCommission: 'Reste sur la carte après les frais',
     alreadyCovered: 'Votre solde actuel couvre déjà le total de la période de paie. Aucune recharge nécessaire.',
     dailyLog: 'Registre quotidien',
-    dailyLogDesc: 'Les jours précédant aujourd’hui sont verrouillés. Si un jour passé n’a pas été saisi à la main, il compte pour 0 (la valeur par défaut n’est pas présumée) afin de ne pas gonfler le total. Les jours de repos comptent 0 trajet. Le jour marqué « paie » est le 15 ou le dernier jour du mois.',
+    dailyLogDesc: 'Les jours précédant aujourd’hui sont verrouillés. Si un jour passé n’a pas été saisi à la main, il compte pour 0 (la valeur par défaut n’est pas présumée) afin de ne pas gonfler le total. Le vendredi marqué « jour de paie » est le jour de paie aux deux semaines.',
     normal: 'Régulier',
     transfer2: 'Correspondance',
-    currentPeriod: 'Période de paie actuelle',
-    period: 'Période de paie',
-    prevPeriod: '‹ Période précédente',
-    nextPeriod: 'Suivante ›',
-    nextPay: 'prochaine paie :',
-    daysCount: (n) => `${n} jours`,
-    restTitle: 'Jours de repos',
-    restDesc: (n) => `Si vos ${n} jours de repos sont toujours les mêmes, choisissez-les ici. S’ils changent chaque semaine, laissez vide et cochez « Repos » sur chaque jour. Les jours de repos comptent 0 trajet.`,
-    restPickHint: (n) => `Sélectionnez ${n} jours (vous en avez moins ou plus).`,
-    restDay: 'Repos',
-    restBadge: 'repos',
   },
   wishlist: {
     globalSummary: 'Résumé global',
@@ -265,7 +251,7 @@ export const fr = {
     isr: 'Impôt sur le revenu (ISR) retenu',
     imss: 'Sécurité sociale (IMSS, est.)',
     otherDeductions: 'Autres retenues',
-    note: (uma) => `Impôt sur le revenu estimé selon le barème officiel 2026 (LISR, art. 96), calculé au prorata sur 15 jours. Sécurité sociale estimée avec les taux fixes de l’employé (2,375 % de l’assiette salariale + 0,40 % sur l’excédent de 3 UMA; UMA quotidienne 2026 : ${uma}), en utilisant la paie brute ÷ 14 comme approximation de votre assiette salariale quotidienne — elle peut varier si votre assiette réelle intègre des primes. Le montant réel peut aussi changer avec des primes ou d’autres revenus.`,
+    note: (uma) => `Impôt sur le revenu estimé selon le barème officiel 2026 (LISR, art. 96), calculé au prorata sur 14 jours. Sécurité sociale estimée avec les taux fixes de l’employé (2,375 % de l’assiette salariale + 0,40 % sur l’excédent de 3 UMA; UMA quotidienne 2026 : ${uma}), en utilisant la paie brute ÷ 14 comme approximation de votre assiette salariale quotidienne — elle peut varier si votre assiette réelle intègre des primes. Le montant réel peut aussi changer avec des primes ou d’autres revenus.`,
     otherDeductionsTitle: 'Autres retenues',
     otherDeductionsDesc: 'Infonavit, Fonacot, pension alimentaire ordonnée par un tribunal et cotisations syndicales n’ont pas de taux officiel unique : elles dépendent de votre prêt, de votre contrat ou d’une ordonnance. Ajoutez les vôtres ici (en % de votre paie brute ou en montant fixe par période de paie) et elles seront retranchées plus haut sur chaque ligne.',
     guide: [
@@ -331,7 +317,6 @@ export const fr = {
     resetAccountsConfirm: 'Voulez-vous vraiment mettre à 0 $ le solde de tous les comptes? Les comptes sont conservés.',
     resetIncomeConfirm: 'Voulez-vous vraiment mettre à 0 $ tous les revenus? Les éléments sont conservés.',
     resetFixedConfirm: 'Voulez-vous vraiment réinitialiser les paiements de cette période de paie? Le montant fixe de chaque dépense est conservé.',
-    resetsOn: 'réinitialisation le',
     uncategorized: 'Sans catégorie',
   },
   products: {

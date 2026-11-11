@@ -1,6 +1,6 @@
-# Quincena — Finanzas y Tiempo
+# Catorcena — Finanzas y Tiempo
 
-App web (Vite + React) para calcular horas extra, consultar quincenas de pago,
+App web (Vite + React) para calcular horas extra, consultar catorcenas de pago,
 registrar gastos de transporte y llevar una lista de deseos. Persistencia 100%
 en el cliente vía `localStorage` (sin backend, ideal para Vercel estático).
 
@@ -39,7 +39,7 @@ src/
   utils/            dates.js, overtime.js (Módulo A), payroll.js (Módulo B)
   modules/
     Overtime/       Módulo A — Calculadora de horas extra
-    Payroll/        Módulo B — Calendario de quincenas
+    Payroll/        Módulo B — Calendario de catorcenas
     Transport/      Módulo C — Gastos de transporte
     Wishlist/       Módulo D — Lista de deseos
     Debts/          Módulo E — Deudas
@@ -62,19 +62,18 @@ src/
   implementó tal como se redactó en el prompt; si el criterio real es el de la
   LFT clásica, solo hay que ajustar `calcularSemana()` en `overtime.js`.
 
-**Módulo B — Quincenas** (`src/utils/payroll.js`)
-- Pagos el día 15 y el último día del mes. Índice de quincena = año*24 + mes*2 + (mitad B ? 1 : 0), sin fechas ancla.
-- `indiceQuincena()` calcula el índice de cualquier fecha; `quincenaDe()`
-  regresa la quincena vigente. Modo 'pago' (Transporte/Presupuesto: arranca el día de pago) y
-  modo 'calendario' (Horas extra/Calendario: 1–15 y 16–fin de mes).
+**Módulo B — Catorcenas** (`src/utils/payroll.js`)
+- Referencia: viernes 14/08/2026 = catorcena índice 0.
+- `indiceCatorcena()` calcula el índice de cualquier fecha; `catorcenaDe()`
+  regresa la catorcena vigente para "hoy".
 
 **Módulo C — Transporte**
 - Camión normal $11.00 / Transbordo $5.50.
-- Los días de la quincena en curso anteriores a "hoy" quedan bloqueados
+- Los días de la catorcena en curso anteriores a "hoy" quedan bloqueados
   (`disabled`) para edición.
 - Calculadora de recarga (`calcularRecarga()` en `overtime.js`): a partir del
   saldo actual de la tarjeta (persistente, se actualiza libremente) y el
-  total necesario de la quincena, calcula cuánto falta y cuánto transferir
+  total necesario de la catorcena, calcula cuánto falta y cuánto transferir
   para que, después de una comisión del 3%, quede cubierto exactamente lo
   que falta (redondeado hacia arriba en centavos para nunca quedar corto).
 

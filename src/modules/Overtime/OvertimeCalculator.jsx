@@ -2,16 +2,15 @@ import { useState, useMemo } from 'react'
 import { useAppData } from '../../context/AppDataContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { addDays, formatShort, formatLong, dayName, todayISO, parseISODate, startOfWeekMonday } from '../../utils/dates'
-import { calcularSemanaParcial, formatMXN, LIMITE_LEGAL_SEMANAL } from '../../utils/overtime'
-import { HORAS_EFECTIVAS_DIA } from '../../utils/config'
-import { indiceQuincenaTrabajada, quincenaTrabajadaPorIndice, diasDeQuincena, semanasQueTocan } from '../../utils/payroll'
+import { calcularSemana, formatMXN, LIMITE_LEGAL_SEMANAL } from '../../utils/overtime'
+import { indiceCatorcena, catorcenaPorIndice } from '../../utils/payroll'
 import { totalesHorario, minAHoras, fmtDuracion, META_SEMANAL_HRS } from '../../utils/schedule'
 import ScheduleCapture from './ScheduleCapture'
 import DraftNumber from '../../components/DraftNumber'
 
 const redondear2 = (n) => Math.round(n * 100) / 100
 
-function BloqueSemana({ titulo, weekStart, inicio, fin, horas, onChange, undertime, onUndertime, horarios, resultado, lang, t }) {
+function BloqueSemana({ titulo, weekStart, horas, onChange, undertime, onUndertime, horarios, resultado, lang, t }) {
   const uTotal = redondear2(undertime.reduce((a, b) => a + (Number(b) || 0), 0))
 
   // Verificación contra el horario leído de las capturas (Open + Schedule Extension)
@@ -39,9 +38,8 @@ function BloqueSemana({ titulo, weekStart, inicio, fin, horas, onChange, underti
 
       {[0, 1, 2, 3, 4, 5, 6].map((i) => {
         const fecha = addDays(weekStart, i)
-        const fuera = fecha < inicio || fecha > fin // día de otra quincena (semana partida)
         return (
-          <div className={`day-row${fuera ? ' locked' : ''}`} key={fecha}>
+          <div className="day-row" key={fecha}>
             <div>
               <div className="day-name">
                 {dayName(fecha, false, lang)}
@@ -58,7 +56,6 @@ function BloqueSemana({ titulo, weekStart, inicio, fin, horas, onChange, underti
                   step="0.01"
                   value={horas[i]}
                   placeholder="0"
-                  disabled={fuera}
                   onCommit={(n) => onChange(i, n)}
                 />
               </div>
@@ -70,7 +67,6 @@ function BloqueSemana({ titulo, weekStart, inicio, fin, horas, onChange, underti
                   step="0.01"
                   value={undertime[i] || 0}
                   placeholder="0"
-                  disabled={fuera}
                   onCommit={(n) => onUndertime(i, n)}
                 />
               </div>
@@ -88,7 +84,7 @@ function BloqueSemana({ titulo, weekStart, inicio, fin, horas, onChange, underti
         <div className="stat">
           <div className="label">{t('overtime.ordinary')(LIMITE_LEGAL_SEMANAL)}</div>
           <div className="value mono">{resultado.ordinarias} {t('overtime.hrs')}</div>
-          <div className="label">{t('overtime.inSalary')}</div>
+          <div className="label mono">{formatMXN(resultado.pagoOrdinario)}</div>
         </div>
         <div className="stat">
           <div className="label">{t('overtime.double')}</div>
@@ -111,7 +107,7 @@ function BloqueSemana({ titulo, weekStart, inicio, fin, horas, onChange, underti
 
       <div className="stat" style={{ marginTop: 14, background: 'transparent', border: '1px solid var(--accent)' }}>
         <div className="label">{t('overtime.weekTotal')}</div>
-        <div className="value accent mono" style={{ fontSize: '1.3rem' }}>{formatMXN(resultado.pagoExtra)}</div>
+        <div className="value accent mono" style={{ fontSize: '1.3rem' }}>{formatMXN(resultado.total_pago)}</div>
       </div>
 
       {nDias > 0 && (
@@ -158,30 +154,28 @@ function BloqueSemana({ titulo, weekStart, inicio, fin, horas, onChange, underti
 }
 
 export default function OvertimeCalculator() {
-  const { horasPorSemana, setHorasDia, undertimePorSemana, setUndertimeDia, horarios, setHorario, removeHorario, salarioDiario } = useAppData()
-  const tarifa = salarioDiario / HORAS_EFECTIVAS_DIA // tarifa/hora derivada del salario diario
+  const { horasPorSemana, setHorasDia, undertimePorSemana, setUndertimeDia, horarios, setHorario, removeHorario } = useAppData()
   const { t, lang } = useLanguage()
   const hoy = todayISO()
-  const [indice, setIndice] = useState(indiceQuincenaTrabajada(hoy))
+  const [indice, setIndice] = useState(indiceCatorcena(hoy))
 
-  const quincena = useMemo(() => quincenaTrabajadaPorIndice(indice), [indice])
-  const diasPeriodo = useMemo(() => diasDeQuincena(quincena.start, quincena.end), [quincena.start, quincena.end])
+  const catorcena = useMemo(() => catorcenaPorIndice(indice), [indice])
+  const week1Start = catorcena.start
+  const week2Start = addDays(catorcena.start, 7)
+
+  const horas1 = horasPorSemana[week1Start] || [0, 0, 0, 0, 0, 0, 0]
+  const horas2 = horasPorSemana[week2Start] || [0, 0, 0, 0, 0, 0, 0]
+
+  const under1 = undertimePorSemana[week1Start] || [0, 0, 0, 0, 0, 0, 0]
+  const under2 = undertimePorSemana[week2Start] || [0, 0, 0, 0, 0, 0, 0]
 
   // Horas efectivas del día = horas capturadas − undertime (nunca menos de 0)
   const efectivas = (horas, under) => horas.map((h, i) => Math.max(0, redondear2((Number(h) || 0) - (Number(under[i]) || 0))))
 
-  // Una quincena (13–16 días) toca de 3 a 4 semanas lunes–domingo; la primera y la
-  // última pueden quedar partidas. Cada semana paga solo los días de esta quincena.
-  const semanas = useMemo(() => {
-    const dif = (a, b) => Math.round((parseISODate(a) - parseISODate(b)) / 86400000)
-    return semanasQueTocan(quincena.start, quincena.end).map((weekStart, n) => {
-      const horas = horasPorSemana[weekStart] || [0, 0, 0, 0, 0, 0, 0]
-      const under = undertimePorSemana[weekStart] || [0, 0, 0, 0, 0, 0, 0]
-      const desde = Math.max(0, dif(quincena.start, weekStart))
-      const hasta = Math.min(6, dif(quincena.end, weekStart))
-      return { n: n + 1, weekStart, horas, under, resultado: calcularSemanaParcial(efectivas(horas, under), weekStart, desde, hasta, tarifa) }
-    })
-  }, [quincena.start, quincena.end, horasPorSemana, undertimePorSemana, tarifa])
+  const resultado1 = useMemo(() => calcularSemana(efectivas(horas1, under1), week1Start), [horas1, under1, week1Start])
+  const resultado2 = useMemo(() => calcularSemana(efectivas(horas2, under2), week2Start), [horas2, under2, week2Start])
+
+  const dias14 = useMemo(() => Array.from({ length: 14 }, (_, i) => addDays(catorcena.start, i)), [catorcena.start])
 
   // Guarda el horario leído y llena las horas del día con Open + Schedule Extension.
   function aplicarHorario(fechaISO, rows) {
@@ -191,20 +185,17 @@ export default function OvertimeCalculator() {
     setHorasDia(semana, idx, Math.round((totalesHorario(rows).trabajado / 60) * 10000) / 10000)
   }
 
-  const totalQuincena = semanas.reduce((a, w) => a + w.resultado.pagoExtra, 0)
-  const totalHoras = redondear2(semanas.reduce((a, w) => a + w.resultado.total, 0))
+  const totalCatorcena = resultado1.total_pago + resultado2.total_pago
+  const totalHoras = resultado1.total + resultado2.total
 
   return (
     <div>
-      <div className="card" >
-        <p className="card-sub" style={{ margin: 0 }}>{t('overtime.rateInfo')(formatMXN(tarifa), HORAS_EFECTIVAS_DIA)}</p>
-      </div>
       <div className="card ticket" style={{ borderColor: 'var(--accent)' }}>
-        <p className="pill current">{quincena.index === indiceQuincenaTrabajada(hoy) ? t('overtime.currentBiweek') : t('overtime.biweek')} · #{quincena.numero}/24 · {quincena.anio}</p>
+        <p className="pill current">{catorcena.index === indiceCatorcena(hoy) ? t('overtime.currentBiweek') : t('overtime.biweek')}</p>
         <h2 className="display" style={{ margin: '10px 0 2px' }}>
-          {formatShort(quincena.start, lang)} – {formatShort(quincena.end, lang)}
+          {formatShort(catorcena.start, lang)} – {formatShort(catorcena.end, lang)}
         </h2>
-        <p className="card-sub" style={{ marginBottom: 14 }}>{t('overtime.paidOn')} {formatLong(quincena.payDate, lang)}</p>
+        <p className="card-sub" style={{ marginBottom: 14 }}>{t('overtime.paidOn')} {formatLong(catorcena.payDate, lang)}</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button className="btn" onClick={() => setIndice((k) => k - 1)}>{t('overtime.prevBiweek')}</button>
           <div className="grid cols-2" style={{ flex: 1 }}>
@@ -214,7 +205,7 @@ export default function OvertimeCalculator() {
             </div>
             <div className="stat" style={{ borderColor: 'var(--accent)' }}>
               <div className="label">{t('overtime.totalToPay')}</div>
-              <div className="value accent mono">{formatMXN(totalQuincena)}</div>
+              <div className="value accent mono">{formatMXN(totalCatorcena)}</div>
             </div>
           </div>
           <button className="btn" onClick={() => setIndice((k) => k + 1)}>{t('overtime.nextBiweek')}</button>
@@ -222,7 +213,7 @@ export default function OvertimeCalculator() {
       </div>
 
       <ScheduleCapture
-        dias={diasPeriodo}
+        dias={dias14}
         horarios={horarios}
         onSave={aplicarHorario}
         onRemove={removeHorario}
@@ -230,23 +221,30 @@ export default function OvertimeCalculator() {
         t={t}
       />
 
-      {semanas.map((w) => (
-        <BloqueSemana
-          key={w.weekStart}
-          titulo={t('overtime.weekN')(w.n)}
-          weekStart={w.weekStart}
-          inicio={quincena.start}
-          fin={quincena.end}
-          horas={w.horas}
-          undertime={w.under}
-          onUndertime={(i, v) => setUndertimeDia(w.weekStart, i, v)}
-          horarios={horarios}
-          resultado={w.resultado}
-          onChange={(i, v) => setHorasDia(w.weekStart, i, v)}
-          lang={lang}
-          t={t}
-        />
-      ))}
+      <BloqueSemana
+        titulo={t('overtime.week1')}
+        weekStart={week1Start}
+        horas={horas1}
+        undertime={under1}
+        onUndertime={(i, v) => setUndertimeDia(week1Start, i, v)}
+        horarios={horarios}
+        resultado={resultado1}
+        onChange={(i, v) => setHorasDia(week1Start, i, v)}
+        lang={lang}
+        t={t}
+      />
+      <BloqueSemana
+        titulo={t('overtime.week2')}
+        weekStart={week2Start}
+        horas={horas2}
+        undertime={under2}
+        onUndertime={(i, v) => setUndertimeDia(week2Start, i, v)}
+        horarios={horarios}
+        resultado={resultado2}
+        onChange={(i, v) => setHorasDia(week2Start, i, v)}
+        lang={lang}
+        t={t}
+      />
     </div>
   )
 }

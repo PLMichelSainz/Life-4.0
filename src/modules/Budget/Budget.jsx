@@ -4,7 +4,7 @@ import { useAppData } from '../../context/AppDataContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { formatMXN } from '../../utils/overtime'
 import { todayISO, formatShort } from '../../utils/dates'
-import { indiceQuincena, quincenaPorIndice } from '../../utils/payroll'
+import { indiceCatorcenaPago, catorcenaPagoPorIndice } from '../../utils/payroll'
 
 const TIPO_KEY = { credito: 'credito', debito: 'debito', cash: 'cash' }
 
@@ -228,11 +228,11 @@ export default function Budget() {
   } = useAppData()
   const { t, lang } = useLanguage()
   const pedirConfirmacion = useConfirm()
-  // El "periodo" que resetea los gastos fijos es la quincena de pago (15 y
-  // último de mes; mismo índice que Transporte): el monto pagado vuelve a $0
-  // justo cuando llega tu siguiente día de pago.
-  const periodo = indiceQuincena(todayISO())
-  const quincenaActual = useMemo(() => quincenaPorIndice(periodo), [periodo])
+  // El "periodo" que resetea los gastos fijos ahora es la catorcena de pago
+  // real (mismo sistema que Transporte), no el mes calendario: así el monto
+  // pagado vuelve a $0 justo cuando llega tu siguiente día de pago.
+  const periodo = indiceCatorcenaPago(todayISO())
+  const catorcenaActual = useMemo(() => catorcenaPagoPorIndice(periodo), [periodo])
 
   const [conceptoCuenta, setConceptoCuenta] = useState('')
   const [montoCuenta, setMontoCuenta] = useState('')
@@ -443,7 +443,7 @@ export default function Budget() {
           </button>
         </div>
         <p className="card-sub">
-          {t('budget.fixedExpensesDesc')} · {t('budget.resetsOn')} {formatShort(quincenaActual.siguientePago, lang)}
+          {t('budget.fixedExpensesDesc')} · se resetea el {formatShort(catorcenaActual.siguientePago, lang)}
         </p>
         <form onSubmit={crearGasto} style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
           <div style={{ flex: 2, minWidth: 160 }}>
