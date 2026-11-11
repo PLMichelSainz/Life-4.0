@@ -99,7 +99,7 @@ export default function ScheduleCapture({ dias, horarios, onSave, onRemove, lang
     }
   }, [])
 
-  // ---- resumen de la catorcena según horario ----
+  // ---- resumen de la quincena según horario ----
   let nDias = 0
   const tot = { open: 0, ext: 0, train: 0, trabajado: 0 }
   dias.forEach((f) => {
@@ -195,7 +195,7 @@ export default function ScheduleCapture({ dias, horarios, onSave, onRemove, lang
         </div>
       )}
 
-      {/* 14 casillas: una por día de la catorcena */}
+      {/* una casilla por día de la quincena (13–16) */}
       <div className="slots-grid" style={{ marginBottom: 12 }}>
         {dias.map((f) => {
           const h = horarios[f]
@@ -228,7 +228,7 @@ export default function ScheduleCapture({ dias, horarios, onSave, onRemove, lang
       {nDias > 0 && (
         <div style={{ marginBottom: 12 }}>
           <p className="card-sub" style={{ marginBottom: 6 }}>
-            {t('overtime.schedCatorcena')} · {t('overtime.daysLoaded')(nDias, dias.length)}
+            {t('overtime.schedQuincena')} · {t('overtime.daysLoaded')(nDias, dias.length)}
           </p>
           <ResumenTiempos x={tot} t={t} />
         </div>
