@@ -3,9 +3,9 @@ import { fr } from './fr.js'
 export const translations = {
   es: {
     sidebar: {
-      brand: 'Catorcena',
+      brand: 'Quincena',
       overtime: 'Horas extra',
-      payroll: 'Catorcenas',
+      payroll: 'Quincenas',
       transport: 'Transporte',
       wishlist: 'Lista de deseos',
       debts: 'Deudas',
@@ -21,7 +21,7 @@ export const translations = {
     topbar: {
       titles: {
         overtime: 'Calculadora de horas extra',
-        payroll: 'Calendario de catorcenas',
+        payroll: 'Calendario de quincenas',
         transport: 'Gastos de transporte',
         wishlist: 'Lista de deseos',
         debts: 'Deudas',
@@ -85,13 +85,13 @@ export const translations = {
       confirmDelete: '¿Seguro que quieres eliminarlo?',
     },
     overtime: {
-      currentBiweek: 'Catorcena en curso',
-      biweek: 'Catorcena',
+      currentBiweek: 'Quincena en curso',
+      biweek: 'Quincena',
       paidOn: 'Se paga el',
-      prevBiweek: '‹ Catorcena anterior',
+      prevBiweek: '‹ Quincena anterior',
       nextBiweek: 'Siguiente ›',
       totalHours: 'Horas totales',
-      totalToPay: 'Total a pagar (catorcena)',
+      totalToPay: 'Total a pagar (quincena)',
       week1: 'Semana 1',
       week2: 'Semana 2',
       referenceShift: 'jornada ordinaria de referencia',
@@ -104,7 +104,7 @@ export const translations = {
       hoursLabel: 'Horas',
       undertime: 'Undertime',
       fromSchedule: 'horario',
-      scheduleTitle: 'Horario catorcenal (capturas)',
+      scheduleTitle: 'Horario quincenal (capturas)',
       scheduleDesc: 'Pega con Ctrl+V, arrastra o elige las capturas de tu horario (una por día, hasta 14). La fecha se lee sola. Solo cuentan como tiempo laborado Open, Schedule Extension, Client Training (cualquier variante) y NPS; los breaks y el Under Time no.',
       chooseImages: 'Elegir imágenes',
       readingImg: (i, n) => `Leyendo imagen ${i} de ${n}…`,
@@ -115,7 +115,8 @@ export const translations = {
       assignTo: 'Asignar a',
       assign: 'Asignar',
       discard: 'Descartar',
-      schedCatorcena: 'Catorcena según horario',
+      schedQuincena: 'Quincena según horario',
+      weekN: (n) => `Semana ${n}`,
       schedOpen: 'Open (trabajo)',
       schedExt: 'Extra (Schedule Extension)',
       schedTotal: 'Total trabajado',
@@ -142,10 +143,10 @@ export const translations = {
       overlapWarn: (a, b, m) => `Filas encimadas ${m} min entre ${a} y ${b}: puede haber una fila repetida.`,
     },
     payroll: {
-      currentBiweek: 'Catorcena en curso',
+      currentBiweek: 'Quincena en curso',
       payDay: 'Día de pago:',
-      upcoming: 'Próximas y anteriores catorcenas',
-      description: 'Periodo trabajado de 14 días (lunes a domingo); el pago cae 5 días después de terminado el periodo. Referencia: periodo 27/jul–09/ago/2026, pagado el 14/ago/2026.',
+      upcoming: 'Próximas y anteriores quincenas',
+      description: 'Periodo trabajado quincenal: del 1 al 15 se paga el día 15, y del 16 al último día del mes se paga el último día del mes (28, 29, 30 o 31 según el mes).',
       pay: 'Pago:',
     },
     transport: {
@@ -250,16 +251,16 @@ export const translations = {
     salaries: {
       hourlyRateTitle: 'Tarifa por hora',
       hourlyRateLabel: 'Tarifa por hora (MXN)',
-      byHoursTitle: 'Salario por catorcena, según horas semanales (WH)',
-      byHoursDesc: (rate) => `Catorcena = 2 semanas. Tarifa actual: ${rate}/hora.`,
+      byHoursTitle: 'Salario por quincena (15 días)',
+      byHoursDesc: (rate) => `Quincena = 15 días de salario diario. Salario diario actual: ${rate}.`,
       gross: 'Bruto (sin deducciones)',
       net: 'Neto (con todas las deducciones)',
       isr: 'ISR retenido',
       imss: 'IMSS (cuota obrera est.)',
       otherDeductions: 'Otras deducciones',
-      note: (uma) => `ISR estimado con la tarifa oficial 2026 (Art. 96 LISR) prorateada a 14 días. IMSS estimado con las cuotas obreras fijas de ley (2.375% del SBC + 0.40% sobre el excedente de 3 UMA, UMA diaria 2026: ${uma}), usando el salario bruto entre 14 como aproximación de tu SBC diario — puede variar si tu SBC real integra aguinaldo/prima vacacional. El monto real también puede cambiar por bonos u otras percepciones.`,
+      note: (uma) => `ISR estimado con la tarifa oficial 2026 (Art. 96 LISR) prorateada a 15 días. IMSS estimado con las cuotas obreras fijas de ley (2.375% del SBC + 0.40% sobre el excedente de 3 UMA, UMA diaria 2026: ${uma}), usando el salario bruto entre 14 como aproximación de tu SBC diario — puede variar si tu SBC real integra aguinaldo/prima vacacional. El monto real también puede cambiar por bonos u otras percepciones.`,
       otherDeductionsTitle: 'Otras deducciones',
-      otherDeductionsDesc: 'Infonavit, Fonacot, pensión alimenticia y cuota sindical no tienen una tasa única oficial: dependen de tu crédito, tu contrato o una orden judicial. Agrega aquí la tuya (como % de tu sueldo bruto o como monto fijo por catorcena) y se descontará arriba en cada fila.',
+      otherDeductionsDesc: 'Infonavit, Fonacot, pensión alimenticia y cuota sindical no tienen una tasa única oficial: dependen de tu crédito, tu contrato o una orden judicial. Agrega aquí la tuya (como % de tu sueldo bruto o como monto fijo por quincena) y se descontará arriba en cada fila.',
       guide: [
         { nombre: 'Infonavit (crédito de vivienda)', rango: 'Normalmente 20%, 25% o 30% del sueldo, según el descuento que elegiste al tramitar el crédito.' },
         { nombre: 'Fonacot', rango: 'Cuota fija definida en tu contrato de crédito (comúnmente 10%–30% del sueldo).' },
@@ -373,7 +374,7 @@ export const translations = {
 
   en: {
     sidebar: {
-      brand: 'Catorcena',
+      brand: 'Quincena',
       overtime: 'Overtime',
       payroll: 'Pay periods',
       transport: 'Transport',
@@ -485,7 +486,8 @@ export const translations = {
       assignTo: 'Assign to',
       assign: 'Assign',
       discard: 'Discard',
-      schedCatorcena: 'Pay period per schedule',
+      schedQuincena: 'Pay period per schedule',
+      weekN: (n) => `Week ${n}`,
       schedOpen: 'Open (work)',
       schedExt: 'Extra (Schedule Extension)',
       schedTotal: 'Total worked',
@@ -515,7 +517,7 @@ export const translations = {
       currentBiweek: 'Current pay period',
       payDay: 'Pay day:',
       upcoming: 'Upcoming and past pay periods',
-      description: '14-day pay period (Monday to Sunday); payment lands 5 days after the period ends. Reference: 07/27–08/09/2026 period, paid on 08/14/2026.',
+      description: 'Semi-monthly pay period: the 1st–15th is paid on the 15th, and the 16th–end of month is paid on the last day of the month.',
       pay: 'Pay:',
     },
     transport: {
@@ -627,7 +629,7 @@ export const translations = {
       isr: 'Income tax (ISR) withheld',
       imss: 'Social security (IMSS, est.)',
       otherDeductions: 'Other deductions',
-      note: (uma) => `Income tax estimated with the official 2026 rate (LISR Art. 96) prorated to 14 days. Social security estimated with the fixed employee rates (2.375% of the wage base + 0.40% over the excess of 3 UMA, 2026 daily UMA: ${uma}), using gross pay ÷ 14 as an approximation of your daily wage base — it can vary if your real wage base integrates bonuses. The actual amount can also change with bonuses or other income.`,
+      note: (uma) => `Income tax estimated with the official 2026 rate (LISR Art. 96) prorated to 15 days. Social security estimated with the fixed employee rates (2.375% of the wage base + 0.40% over the excess of 3 UMA, 2026 daily UMA: ${uma}), using gross pay ÷ 14 as an approximation of your daily wage base — it can vary if your real wage base integrates bonuses. The actual amount can also change with bonuses or other income.`,
       otherDeductionsTitle: 'Other deductions',
       otherDeductionsDesc: 'Infonavit, Fonacot, court-ordered support, and union dues don\u2019t have a single official rate: they depend on your loan, your contract, or a court order. Add yours here (as a % of your gross pay or a fixed amount per pay period) and it\u2019ll be deducted above on every row.',
       guide: [

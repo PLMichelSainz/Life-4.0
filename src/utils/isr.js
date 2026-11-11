@@ -20,13 +20,13 @@ export const TARIFA_ISR_MENSUAL_2026 = [
 export const SUBSIDIO_EMPLEO_MENSUAL_2026 = { tope: 9081.0, monto: 406.83 }
 
 // Días de referencia que usa el SAT para prorratear la tarifa mensual a
-// periodos distintos (semanal, decenal, catorcenal, etc.).
+// periodos distintos (semanal, decenal, quincenal, etc.).
 const DIAS_MES_REFERENCIA = 30.4
 
 /**
  * Calcula el ISR (bruto, subsidio y neto) para un ingreso gravable de un
  * periodo de `diasPeriodo` días, prorrateando la tarifa mensual oficial.
- * Para una catorcena: calcularISRPeriodo(ingresoGravable, 14).
+ * Para una quincena: calcularISRPeriodo(ingresoGravable, 15).
  */
 export function calcularISRPeriodo(ingresoGravable, diasPeriodo) {
   const ingreso = Math.max(0, Number(ingresoGravable) || 0)

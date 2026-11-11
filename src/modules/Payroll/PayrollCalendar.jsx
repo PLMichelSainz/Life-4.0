@@ -1,13 +1,13 @@
 import { useMemo } from 'react'
-import { listaCatorcenas } from '../../utils/payroll'
+import { listaQuincenas } from '../../utils/payroll'
 import { useLanguage } from '../../context/LanguageContext'
 import { todayISO, formatShort, formatLong } from '../../utils/dates'
 
 export default function PayrollCalendar() {
   const { t, lang } = useLanguage()
   const hoy = todayISO()
-  const catorcenas = useMemo(() => listaCatorcenas(hoy, 2, 4), [hoy])
-  const actual = catorcenas.find((c) => c.esActual)
+  const quincenas = useMemo(() => listaQuincenas(hoy, 2, 4), [hoy])
+  const actual = quincenas.find((c) => c.esActual)
 
   return (
     <div>
@@ -24,7 +24,7 @@ export default function PayrollCalendar() {
       <div className="card">
         <p className="card-title">{t('payroll.upcoming')}</p>
         <p className="card-sub">{t('payroll.description')}</p>
-        {catorcenas.map((c) => (
+        {quincenas.map((c) => (
           <div className="day-row" key={c.index}>
             <div>
               <div className="day-name">

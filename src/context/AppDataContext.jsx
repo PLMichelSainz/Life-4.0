@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react'
 import { useCloudState } from '../hooks/useCloudState'
 import { useAuth } from './AuthContext'
-import { TARIFA_ORDINARIA } from '../utils/overtime'
+import { SALARIO_DIARIO } from '../utils/config'
 
 const AppDataContext = createContext(null)
 
@@ -44,8 +44,8 @@ export function AppDataProvider({ children }) {
   // saldo libre de la tarjeta de transporte (se actualiza manualmente)
   const [tarjetaSaldo, setTarjetaSaldo, refetchTarjetaSaldo] = useCloudState(uid, 'transport.cardBalance', 0)
 
-  // tarifa por hora usada en la pestaña de Salarios (editable, por si cambia)
-  const [tarifaPorHora, setTarifaPorHora, refetchTarifa] = useCloudState(uid, 'salaries.hourlyRate', TARIFA_ORDINARIA)
+  // salario diario bruto (Salarios): sueldo mensual ÷ 30. Reemplaza a la tarifa por hora.
+  const [salarioDiario, setSalarioDiario, refetchSalarioDiario] = useCloudState(uid, 'salaries.dailyRate', SALARIO_DIARIO)
 
   // otras deducciones personalizadas (Infonavit, Fonacot, pensión alimenticia, sindicato, etc.)
   // [{ id, nombre, tipo: 'porcentaje' | 'monto', valor }]
@@ -82,7 +82,7 @@ export function AppDataProvider({ children }) {
       refetchTarjetaSaldo(),
       refetchDescansoPatron(),
       refetchDescansoExc(),
-      refetchTarifa(),
+      refetchSalarioDiario(),
       refetchDeducciones(),
       refetchCuentas(),
       refetchIngresos(),
@@ -293,9 +293,9 @@ export function AppDataProvider({ children }) {
     setGastosFijos((prev) => prev.filter((g) => g.id !== id))
   }
   // Registra un pago (como un movimiento individual, con su propio id y fecha)
-  // del gasto fijo en la catorcena de pago actual. Al cambiar de catorcena,
+  // del gasto fijo en la quincena de pago actual. Al cambiar de quincena,
   // el periodo nuevo no existe en `pagos` todavía, así que "pagado" vuelve a
-  // 0 automáticamente sin borrar el historial de catorcenas anteriores.
+  // 0 automáticamente sin borrar el historial de quincenas anteriores.
   function pagarGastoFijo(id, monto, periodo) {
     const abono = Number(monto) || 0
     if (abono <= 0) return
@@ -413,8 +413,8 @@ export function AppDataProvider({ children }) {
     setDescansoDia,
     tarjetaSaldo,
     setTarjetaSaldo,
-    tarifaPorHora,
-    setTarifaPorHora,
+    salarioDiario,
+    setSalarioDiario,
     otrasDeducciones,
     addDeduccion,
     removeDeduccion,

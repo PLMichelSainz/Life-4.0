@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { indiceQuincena, quincenaPorIndice, quincenaDe, diasDeQuincena, ultimoDiaDelMes } from './payroll'
+import {
+  indiceQuincena, quincenaPorIndice, quincenaDe, diasDeQuincena, ultimoDiaDelMes,
+  quincenaTrabajadaPorIndice, indiceQuincenaTrabajada, listaQuincenas, semanasQueTocan,
+} from './payroll'
 
 describe('quincenas (modo pago)', () => {
   it('14 ene es periodo B de diciembre previo; 15 ene es A de enero', () => {
@@ -71,5 +74,37 @@ describe('quincenas (modo pago)', () => {
       }
       prevEnd = q.end
     }
+  })
+})
+
+describe('quincena trabajada (Horas extra / Calendario)', () => {
+  it('1–15 se paga el 15; 16–fin se paga el último día', () => {
+    const a = quincenaTrabajadaPorIndice(indiceQuincenaTrabajada('2026-11-10'))
+    expect([a.start, a.end, a.payDate]).toEqual(['2026-11-01', '2026-11-15', '2026-11-15'])
+    const b = quincenaTrabajadaPorIndice(indiceQuincenaTrabajada('2026-11-20'))
+    expect([b.start, b.end, b.payDate]).toEqual(['2026-11-16', '2026-11-30', '2026-11-30'])
+  })
+
+  it('febrero y cambio de año', () => {
+    const f = quincenaTrabajadaPorIndice(indiceQuincenaTrabajada('2028-02-20'))
+    expect([f.start, f.end, f.dias]).toEqual(['2028-02-16', '2028-02-29', 14])
+    const d = quincenaTrabajadaPorIndice(indiceQuincenaTrabajada('2026-12-31'))
+    expect(d.end).toBe('2026-12-31')
+    expect(quincenaTrabajadaPorIndice(d.index + 1).start).toBe('2027-01-01')
+  })
+
+  it('listaQuincenas marca la actual y es contigua', () => {
+    const l = listaQuincenas('2026-11-10', 2, 4)
+    expect(l.length).toBe(7)
+    expect(l.filter((q) => q.esActual).length).toBe(1)
+    expect(l[2].esActual).toBe(true)
+  })
+
+  it('semanasQueTocan cubre todos los días del periodo', () => {
+    const q = quincenaTrabajadaPorIndice(indiceQuincenaTrabajada('2026-11-10')) // 1–15 nov (dom–dom)
+    const semanas = semanasQueTocan(q.start, q.end)
+    expect(semanas[0]).toBe('2026-10-26')
+    expect(semanas.length).toBe(3)
+    expect(semanas.length).toBeLessThanOrEqual(4)
   })
 })

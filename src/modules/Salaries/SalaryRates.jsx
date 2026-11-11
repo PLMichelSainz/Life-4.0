@@ -4,10 +4,9 @@ import { useAppData } from '../../context/AppDataContext'
 import { formatMXN } from '../../utils/overtime'
 import { calcularISRPeriodo } from '../../utils/isr'
 import { calcularIMSSObreroPeriodo } from '../../utils/imss'
+import { DIAS_BASE_MES } from '../../utils/config'
 
-const DIAS_CATORCENA = 14
-const SEMANAS_CATORCENA = 2
-const JORNADAS_WH = [30, 35, 40, 42, 46]
+const DIAS_QUINCENA = 15
 
 // Deducciones que no tienen una tasa fija oficial (dependen del crédito, del
 // juzgado o del contrato colectivo de cada quien), solo se muestran como
@@ -26,29 +25,27 @@ function calcularDeduccionExtra(deduccion, bruto) {
 
 export default function SalaryRates() {
   const pedirConfirmacion = useConfirm()
-  const { tarifaPorHora, setTarifaPorHora, otrasDeducciones, addDeduccion, removeDeduccion } = useAppData()
-  const [tarifaInput, setTarifaInput] = useState(String(tarifaPorHora))
+  const { salarioDiario, setSalarioDiario, otrasDeducciones, addDeduccion, removeDeduccion } = useAppData()
+  const [sueldoInput, setSueldoInput] = useState(String(Math.round(salarioDiario * DIAS_BASE_MES * 100) / 100))
   const [nombreDed, setNombreDed] = useState('')
   const [tipoDed, setTipoDed] = useState('porcentaje')
   const [valorDed, setValorDed] = useState('')
 
-  const filas = useMemo(() => {
-    return JORNADAS_WH.map((wh) => {
-      const bruto = tarifaPorHora * wh * SEMANAS_CATORCENA
-      const sbcDiarioAprox = bruto / DIAS_CATORCENA
-      const { isrNeto } = calcularISRPeriodo(bruto, DIAS_CATORCENA)
-      const imss = calcularIMSSObreroPeriodo(sbcDiarioAprox, DIAS_CATORCENA)
-      const extras = otrasDeducciones.reduce((a, d) => a + calcularDeduccionExtra(d, bruto), 0)
-      const neto = Math.max(0, bruto - isrNeto - imss - extras)
-      return { wh, bruto, isr: isrNeto, imss, extras, neto }
-    })
-  }, [tarifaPorHora, otrasDeducciones])
+  // Una sola fila: la quincena de 15 días (salario diario × 15, se paga el 15 y el último día).
+  const q = useMemo(() => {
+    const bruto = salarioDiario * DIAS_QUINCENA
+    const { isrNeto } = calcularISRPeriodo(bruto, DIAS_QUINCENA)
+    const imss = calcularIMSSObreroPeriodo(salarioDiario, DIAS_QUINCENA) // SBC diario ≈ salario diario
+    const extras = otrasDeducciones.reduce((a, d) => a + calcularDeduccionExtra(d, bruto), 0)
+    const neto = Math.max(0, bruto - isrNeto - imss - extras)
+    return { bruto, isr: isrNeto, imss, extras, neto }
+  }, [salarioDiario, otrasDeducciones])
 
-  function guardarTarifa(e) {
+  function guardarSueldo(e) {
     e.preventDefault()
-    const valor = Number(tarifaInput)
-    if (!valor || valor <= 0) return
-    setTarifaPorHora(valor)
+    const mensual = Number(sueldoInput)
+    if (!mensual || mensual <= 0) return
+    setSalarioDiario(mensual / DIAS_BASE_MES)
   }
 
   function agregarDeduccion(e) {
@@ -62,61 +59,70 @@ export default function SalaryRates() {
   return (
     <div>
       <div className="card">
-        <p className="card-title">Tarifa por hora</p>
-        <form onSubmit={guardarTarifa} style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+        <p className="card-title">Sueldo bruto mensual</p>
+        <form onSubmit={guardarSueldo} style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: 140 }}>
-            <label>Tarifa por hora (MXN)</label>
+            <label>Sueldo bruto mensual (MXN)</label>
             <input
               type="number"
               min="0"
               step="0.01"
-              value={tarifaInput}
-              onChange={(e) => setTarifaInput(e.target.value)}
+              value={sueldoInput}
+              onChange={(e) => setSueldoInput(e.target.value)}
               placeholder="0.00"
             />
           </div>
           <button type="submit" className="btn primary">Guardar</button>
         </form>
+        <p className="card-sub" style={{ marginTop: 10, marginBottom: 0 }}>
+          Salario diario = mensual ÷ {DIAS_BASE_MES} = <b className="mono">{formatMXN(salarioDiario)}</b>. Se paga por día natural
+          (incluye tus días de descanso).
+        </p>
       </div>
 
       <div className="card">
-        <p className="card-title">Salario por catorcena, según horas semanales (WH)</p>
-        <p className="card-sub">Catorcena = 2 semanas. Tarifa actual: {formatMXN(tarifaPorHora)}/hora.</p>
+        <p className="card-title">Salario por quincena (15 días)</p>
+        <p className="card-sub">Pagos el día 15 y el último día del mes. Salario diario: {formatMXN(salarioDiario)} × {DIAS_QUINCENA}.</p>
 
-        {filas.map((f) => (
-          <div key={f.wh} style={{ marginBottom: 16 }}>
-            <div className="day-name" style={{ marginBottom: 6 }}>{f.wh} WH</div>
-            <div className="grid cols-2">
-              <div className="stat">
-                <div className="label">Bruto (sin deducciones)</div>
-                <div className="value mono">{formatMXN(f.bruto)}</div>
-              </div>
-              <div className="stat" style={{ borderColor: 'var(--accent)' }}>
-                <div className="label">Neto (con todas las deducciones)</div>
-                <div className="value accent mono">{formatMXN(f.neto)}</div>
-              </div>
-            </div>
-            <div className="grid cols-3" style={{ marginTop: 8 }}>
-              <div className="stat">
-                <div className="label">ISR retenido</div>
-                <div className="value mono" style={{ color: 'var(--danger)' }}>-{formatMXN(f.isr)}</div>
-              </div>
-              <div className="stat">
-                <div className="label">IMSS (cuota obrera est.)</div>
-                <div className="value mono" style={{ color: 'var(--danger)' }}>-{formatMXN(f.imss)}</div>
-              </div>
-              <div className="stat">
-                <div className="label">Otras deducciones</div>
-                <div className="value mono" style={{ color: 'var(--danger)' }}>-{formatMXN(f.extras)}</div>
-              </div>
-            </div>
+        <div className="grid cols-2">
+          <div className="stat">
+            <div className="label">Bruto (sin deducciones)</div>
+            <div className="value mono">{formatMXN(q.bruto)}</div>
           </div>
-        ))}
+          <div className="stat" style={{ borderColor: 'var(--accent)' }}>
+            <div className="label">Neto (con todas las deducciones)</div>
+            <div className="value accent mono">{formatMXN(q.neto)}</div>
+          </div>
+        </div>
+        <div className="grid cols-3" style={{ marginTop: 8 }}>
+          <div className="stat">
+            <div className="label">ISR retenido</div>
+            <div className="value mono" style={{ color: 'var(--danger)' }}>-{formatMXN(q.isr)}</div>
+          </div>
+          <div className="stat">
+            <div className="label">IMSS (cuota obrera est.)</div>
+            <div className="value mono" style={{ color: 'var(--danger)' }}>-{formatMXN(q.imss)}</div>
+          </div>
+          <div className="stat">
+            <div className="label">Otras deducciones</div>
+            <div className="value mono" style={{ color: 'var(--danger)' }}>-{formatMXN(q.extras)}</div>
+          </div>
+        </div>
+        <div className="grid cols-2" style={{ marginTop: 8 }}>
+          <div className="stat">
+            <div className="label">Bruto mensual (2 quincenas)</div>
+            <div className="value mono">{formatMXN(q.bruto * 2)}</div>
+          </div>
+          <div className="stat">
+            <div className="label">Neto mensual estimado (2 quincenas)</div>
+            <div className="value mono">{formatMXN(q.neto * 2)}</div>
+          </div>
+        </div>
 
-        <p className="card-sub" style={{ marginTop: 4, marginBottom: 0 }}>
-          ISR estimado con la tarifa oficial 2026 (Art. 96 LISR) prorateada a 14 días. IMSS estimado con las cuotas
+        <p className="card-sub" style={{ marginTop: 10, marginBottom: 0 }}>
+          ISR estimado con la tarifa oficial 2026 (Art. 96 LISR) prorateada a 15 días. IMSS estimado con las cuotas
           obreras fijas de ley (2.375% del SBC + 0.40% sobre el excedente de 3 UMA, UMA diaria 2026: {formatMXN(117.31)}),
-          usando el salario bruto entre 14 como aproximación de tu SBC diario — puede variar si tu SBC real integra
+          usando tu salario diario como aproximación de tu SBC diario — puede variar si tu SBC real integra
           aguinaldo/prima vacacional. El monto real también puede cambiar por bonos u otras percepciones.
         </p>
       </div>
@@ -126,7 +132,7 @@ export default function SalaryRates() {
         <p className="card-sub">
           Infonavit, Fonacot, pensión alimenticia y cuota sindical no tienen una tasa única oficial: dependen de tu
           crédito, tu contrato o una orden judicial. Agrega aquí la tuya (como % de tu sueldo bruto o como monto fijo
-          por catorcena) y se descontará arriba en cada fila.
+          por quincena) y se descontará arriba.
         </p>
 
         <div style={{ marginBottom: 14 }}>

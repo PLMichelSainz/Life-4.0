@@ -1,7 +1,7 @@
 // Français canadien (Québec). Si falta una clave, la app usa el inglés como respaldo.
 export const fr = {
   sidebar: {
-    brand: 'Catorcena',
+    brand: 'Quincena',
     overtime: 'Heures supplémentaires',
     payroll: 'Périodes de paie',
     transport: 'Transport',
@@ -113,7 +113,8 @@ export const fr = {
     assignTo: 'Associer à',
     assign: 'Associer',
     discard: 'Écarter',
-    schedCatorcena: 'Période de paie selon l’horaire',
+    schedQuincena: 'Période de paie selon l’horaire',
+    weekN: (n) => `Semaine ${n}`,
     schedOpen: 'Open (travail)',
     schedExt: 'Extra (Schedule Extension)',
     schedTotal: 'Total travaillé',
@@ -150,7 +151,7 @@ export const fr = {
     currentBiweek: 'Période de paie actuelle',
     payDay: 'Jour de paie :',
     upcoming: 'Périodes de paie à venir et passées',
-    description: 'Période de paie de 14 jours (du lundi au dimanche); le paiement arrive 5 jours après la fin de la période. Référence : période du 27/07 au 09/08/2026, payée le 14/08/2026.',
+    description: 'Période de paie bimensuelle : du 1er au 15, payée le 15; du 16 à la fin du mois, payée le dernier jour du mois.',
     pay: 'Paie :',
   },
   transport: {
@@ -262,7 +263,7 @@ export const fr = {
     isr: 'Impôt sur le revenu (ISR) retenu',
     imss: 'Sécurité sociale (IMSS, est.)',
     otherDeductions: 'Autres retenues',
-    note: (uma) => `Impôt sur le revenu estimé selon le barème officiel 2026 (LISR, art. 96), calculé au prorata sur 14 jours. Sécurité sociale estimée avec les taux fixes de l’employé (2,375 % de l’assiette salariale + 0,40 % sur l’excédent de 3 UMA; UMA quotidienne 2026 : ${uma}), en utilisant la paie brute ÷ 14 comme approximation de votre assiette salariale quotidienne — elle peut varier si votre assiette réelle intègre des primes. Le montant réel peut aussi changer avec des primes ou d’autres revenus.`,
+    note: (uma) => `Impôt sur le revenu estimé selon le barème officiel 2026 (LISR, art. 96), calculé au prorata sur 15 jours. Sécurité sociale estimée avec les taux fixes de l’employé (2,375 % de l’assiette salariale + 0,40 % sur l’excédent de 3 UMA; UMA quotidienne 2026 : ${uma}), en utilisant la paie brute ÷ 14 comme approximation de votre assiette salariale quotidienne — elle peut varier si votre assiette réelle intègre des primes. Le montant réel peut aussi changer avec des primes ou d’autres revenus.`,
     otherDeductionsTitle: 'Autres retenues',
     otherDeductionsDesc: 'Infonavit, Fonacot, pension alimentaire ordonnée par un tribunal et cotisations syndicales n’ont pas de taux officiel unique : elles dépendent de votre prêt, de votre contrat ou d’une ordonnance. Ajoutez les vôtres ici (en % de votre paie brute ou en montant fixe par période de paie) et elles seront retranchées plus haut sur chaque ligne.',
     guide: [

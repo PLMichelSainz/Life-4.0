@@ -109,3 +109,34 @@ export function calcularRecarga(falta, comisionPct = 0.03) {
   const comision = Math.round((montoTransferir - quedaRecargado) * 100) / 100
   return { falta, montoTransferir, comision, quedaRecargado, tipoComision: 'porcentaje' }
 }
+
+/**
+ * Pago de una semana (lunes..domingo) atribuible solo a los días desde..hasta
+ * (índices 0..6) — necesario cuando una semana queda partida entre dos
+ * quincenas. Las horas se acumulan en orden cronológico, así que las horas que
+ * rebasan 48 se pagan en la quincena donde realmente ocurren:
+ *   pago(días desde..hasta) = pago(acumulado hasta `hasta`) − pago(acumulado antes de `desde`).
+ * Con desde = 0 y hasta = 6 equivale a calcularSemana.
+ */
+export function calcularSemanaParcial(horasPorDia, weekStartISO, desde = 0, hasta = 6) {
+  const prefijo = (n) => horasPorDia.map((h, i) => (i < n ? Number(h) || 0 : 0))
+  const completo = calcularSemana(prefijo(hasta + 1), weekStartISO)
+  const antes = calcularSemana(prefijo(desde), weekStartISO)
+  const r2 = (n) => Math.round(n * 10000) / 10000
+  const resta = (campo) => r2(completo[campo] - antes[campo])
+  const excedente = resta('excedente')
+  return {
+    total: resta('total'),
+    ordinarias: resta('ordinarias'),
+    extraDoble: resta('extraDoble'),
+    extraTriple: resta('extraTriple'),
+    excedente,
+    pagoOrdinario: resta('pagoOrdinario'),
+    pagoDoble: resta('pagoDoble'),
+    pagoTriple: resta('pagoTriple'),
+    pagoExcedente: resta('pagoExcedente'),
+    total_pago: resta('total_pago'),
+    jornadaOrdinaria: completo.jornadaOrdinaria,
+    excedeLimiteLegal: excedente > 0,
+  }
+}

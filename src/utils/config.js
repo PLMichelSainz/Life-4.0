@@ -12,3 +12,8 @@ export const MODO_PERIODO = 'pago'
 
 // D2: si true, un pago que cae en sábado/domingo se adelanta al viernes anterior.
 export const RECORRER_PAGO_A_HABIL = false
+
+// Periodo TRABAJADO (Horas extra y Calendario de pagos): quincena calendario,
+// 1–15 se paga el 15 y 16–fin de mes se paga el último día. Días entre el cierre
+// del periodo y el pago (0 = se paga el mismo día en que cierra).
+export const DESFASE_PAGO_QUINCENA_DIAS = 0
