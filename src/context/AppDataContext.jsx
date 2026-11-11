@@ -27,6 +27,11 @@ export function AppDataProvider({ children }) {
     transbordo: 2,
   })
 
+  // descansos (D3/D4): patrón semanal fijo (0=domingo..6=sábado) + excepciones por fecha
+  // { [fechaISO]: true (descanso) | false (laboral) } para turnos rotativos o cambios puntuales.
+  const [descansoPatron, setDescansoPatron, refetchDescansoPatron] = useCloudState(uid, 'transport.restPattern', [])
+  const [descansoExcepciones, setDescansoExcepciones, refetchDescansoExc] = useCloudState(uid, 'transport.restOverrides', {})
+
   // wishlist: [{ id, nombre, precio, comentario, completado, aportes: [{id, monto, fecha}] }]
   const [wishlist, setWishlist, refetchWishlist] = useCloudState(uid, 'wishlist.items', [])
 
@@ -75,6 +80,8 @@ export function AppDataProvider({ children }) {
       refetchDeudas(),
       refetchFijos(),
       refetchTarjetaSaldo(),
+      refetchDescansoPatron(),
+      refetchDescansoExc(),
       refetchTarifa(),
       refetchDeducciones(),
       refetchCuentas(),
@@ -119,6 +126,14 @@ export function AppDataProvider({ children }) {
       ...prev,
       [dateISO]: { normal: 0, transbordo: 0, ...(prev[dateISO] || {}), [campo]: valor },
     }))
+  }
+
+  // Marca/desmarca un día concreto como descanso. `esDescanso` null quita la excepción.
+  function setDescansoDia(dateISO, esDescanso) {
+    setDescansoExcepciones((prev) => {
+      const { [dateISO]: _q, ...resto } = prev
+      return esDescanso === null ? resto : { ...resto, [dateISO]: !!esDescanso }
+    })
   }
 
   function addWishlistItem(nombre, precio, comentario = '') {
@@ -392,6 +407,10 @@ export function AppDataProvider({ children }) {
     removeFijo,
     addPagoFijo,
     removePagoFijo,
+    descansoPatron,
+    setDescansoPatron,
+    descansoExcepciones,
+    setDescansoDia,
     tarjetaSaldo,
     setTarjetaSaldo,
     tarifaPorHora,

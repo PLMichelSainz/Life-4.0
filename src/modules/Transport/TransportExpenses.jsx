@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import DraftNumber from '../../components/DraftNumber'
 import { useAppData } from '../../context/AppDataContext'
 import { useLanguage } from '../../context/LanguageContext'
-import { catorcenaPagoPorIndice, indiceCatorcenaPago, diasDeCatorcena } from '../../utils/payroll'
-import { todayISO, formatShort, dayName } from '../../utils/dates'
+import { quincenaPorIndice, indiceQuincena, diasDeQuincena } from '../../utils/payroll'
+import { DESCANSOS_POR_SEMANA } from '../../utils/config'
+import { translations } from '../../i18n/translations'
+import { todayISO, formatShort, dayName, parseISODate } from '../../utils/dates'
 import { formatMXN, calcularRecarga } from '../../utils/overtime'
 
 const TARIFA_NORMAL = 11.0
@@ -15,25 +17,42 @@ const COMISION_PCT = 0.03
 // YA TRANSCURRIÓ siempre se muestra y se cuenta como 0, sin importar si se
 // había capturado algo antes de que terminara, para no seguir inflando el
 // total ni el cálculo de recarga con días que ya pasaron.
-function valorEfectivoDia(registroExplicito, campo, hoy, fecha, defaults) {
-  if (fecha < hoy) return 0
+function valorEfectivoDia(registroExplicito, campo, hoy, fecha, defaults, descanso = false) {
+  if (descanso || fecha < hoy) return 0
   if (registroExplicito) return Number(registroExplicito[campo]) || 0
   return Number(defaults[campo]) || 0
 }
 
 export default function TransportExpenses() {
-  const { transporte, setTransporteDia, transporteDefault, setTransporteDefault, tarjetaSaldo, setTarjetaSaldo } =
-    useAppData()
+  const {
+    transporte, setTransporteDia, transporteDefault, setTransporteDefault, tarjetaSaldo, setTarjetaSaldo,
+    descansoPatron, setDescansoPatron, descansoExcepciones, setDescansoDia,
+  } = useAppData()
   const { t, lang } = useLanguage()
   const hoy = todayISO()
-  const [indice, setIndice] = useState(indiceCatorcenaPago(hoy))
+  const [indice, setIndice] = useState(indiceQuincena(hoy))
 
   const [defNormal, setDefNormal] = useState(String(transporteDefault.normal))
   const [defTransbordo, setDefTransbordo] = useState(String(transporteDefault.transbordo))
 
-  const catorcena = useMemo(() => catorcenaPagoPorIndice(indice), [indice])
-  const esActual = catorcena.index === indiceCatorcenaPago(hoy)
-  const dias = useMemo(() => diasDeCatorcena(catorcena.start), [catorcena.start])
+  const quincena = useMemo(() => quincenaPorIndice(indice), [indice])
+  const esActual = quincena.index === indiceQuincena(hoy)
+  const dias = useMemo(() => diasDeQuincena(quincena.start, quincena.end), [quincena.start, quincena.end])
+
+  // Descanso: la excepción del día manda; si no hay, aplica el patrón semanal (0=domingo..6=sábado).
+  const patron = Array.isArray(descansoPatron) ? descansoPatron : []
+  const porPatron = (fecha) => patron.includes(parseISODate(fecha).getDay())
+  const esDescanso = (fecha) =>
+    Object.prototype.hasOwnProperty.call(descansoExcepciones || {}, fecha) ? !!descansoExcepciones[fecha] : porPatron(fecha)
+  const diasSemanaCortos = (translations[lang] || translations.es).days.short
+
+  function alternarPatron(dia) {
+    setDescansoPatron(patron.includes(dia) ? patron.filter((d) => d !== dia) : [...patron, dia].sort())
+  }
+  function marcarDescanso(fecha, marcado) {
+    // Si coincide con lo que dicta el patrón, se quita la excepción para no acumular basura.
+    setDescansoDia(fecha, marcado === porPatron(fecha) ? null : marcado)
+  }
 
   // Cuando un día ya transcurrió, se guarda (persiste) en 0 de verdad, no solo
   // se muestra en 0. Así el dato queda "bloqueado en 0" en la nube/local aunque
@@ -52,8 +71,8 @@ export default function TransportExpenses() {
   const totales = dias.reduce(
     (acc, fecha) => {
       const registro = transporte[fecha]
-      acc.normal += valorEfectivoDia(registro, 'normal', hoy, fecha, transporteDefault)
-      acc.transbordo += valorEfectivoDia(registro, 'transbordo', hoy, fecha, transporteDefault)
+      acc.normal += valorEfectivoDia(registro, 'normal', hoy, fecha, transporteDefault, esDescanso(fecha))
+      acc.transbordo += valorEfectivoDia(registro, 'transbordo', hoy, fecha, transporteDefault, esDescanso(fecha))
       return acc
     },
     { normal: 0, transbordo: 0 }
@@ -76,15 +95,15 @@ export default function TransportExpenses() {
       <div className="card">
         <p className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {t('transport.accumulated')}
-          <span className="pill current">{esActual ? t('overtime.currentBiweek') : t('overtime.biweek')}</span>
+          <span className="pill current">{esActual ? t('transport.currentPeriod') : t('transport.period')}</span>
         </p>
         <p className="card-sub">
-          {formatShort(catorcena.start, lang)} – {formatShort(catorcena.end, lang)} · {t('transport.paidOn')} {formatShort(catorcena.start, lang)} · próximo pago: {formatShort(catorcena.siguientePago, lang)}
+          {formatShort(quincena.start, lang)} – {formatShort(quincena.end, lang)} · {t('transport.daysCount')(quincena.dias)} · {t('transport.paidOn')} {formatShort(quincena.payDate, lang)} · {t('transport.nextPay')} {formatShort(quincena.siguientePago, lang)}
         </p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-          <button className="btn" onClick={() => setIndice((k) => k - 1)}>{t('overtime.prevBiweek')}</button>
+          <button className="btn" onClick={() => setIndice((k) => k - 1)}>{t('transport.prevPeriod')}</button>
           <div style={{ flex: 1 }} />
-          <button className="btn" onClick={() => setIndice((k) => k + 1)}>{t('overtime.nextBiweek')}</button>
+          <button className="btn" onClick={() => setIndice((k) => k + 1)}>{t('transport.nextPeriod')}</button>
         </div>
         <div className="grid cols-3">
           <div className="stat">
@@ -100,6 +119,29 @@ export default function TransportExpenses() {
             <div className="value accent mono">{formatMXN(totalGasto)}</div>
           </div>
         </div>
+      </div>
+
+      <div className="card">
+        <p className="card-title">{t('transport.restTitle')}</p>
+        <p className="card-sub">{t('transport.restDesc')(DESCANSOS_POR_SEMANA)}</p>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {[1, 2, 3, 4, 5, 6, 0].map((d) => (
+            <button
+              type="button"
+              key={d}
+              className={`btn${patron.includes(d) ? ' primary' : ''}`}
+              aria-pressed={patron.includes(d)}
+              onClick={() => alternarPatron(d)}
+            >
+              {diasSemanaCortos[d]}
+            </button>
+          ))}
+        </div>
+        {patron.length !== DESCANSOS_POR_SEMANA && (
+          <p className="card-sub" style={{ marginTop: 10, marginBottom: 0 }}>
+            {t('transport.restPickHint')(DESCANSOS_POR_SEMANA)}
+          </p>
+        )}
       </div>
 
       <div className="card">
@@ -169,21 +211,25 @@ export default function TransportExpenses() {
       </div>
 
       <div className="card">
-        <p className="card-title">{t('transport.dailyLog')} · v2026-09-22-A</p>
+        <p className="card-title">{t('transport.dailyLog')} · v2026-11-10-B</p>
         <p className="card-sub">{t('transport.dailyLogDesc')}</p>
         {dias.map((fecha) => {
           const bloqueado = fecha < hoy
           const registro = transporte[fecha]
-          const normalMostrado = bloqueado ? 0 : valorEfectivoDia(registro, 'normal', hoy, fecha, transporteDefault)
-          const transbordoMostrado = bloqueado ? 0 : valorEfectivoDia(registro, 'transbordo', hoy, fecha, transporteDefault)
+          const descanso = esDescanso(fecha)
+          const normalMostrado = valorEfectivoDia(registro, 'normal', hoy, fecha, transporteDefault, descanso)
+          const transbordoMostrado = valorEfectivoDia(registro, 'transbordo', hoy, fecha, transporteDefault, descanso)
           const esHoy = fecha === hoy
-          const esPago = fecha === catorcena.payDate
+          const esPago = fecha === quincena.payDate
           return (
-            <div className={`day-row${bloqueado ? ' locked' : ''}${esPago ? ' payday' : ''}`} key={fecha}>
+            <div className={`day-row${bloqueado || descanso ? ' locked' : ''}${esPago ? ' payday' : ''}`} key={fecha}>
               <div>
                 <div className="day-name">
                   {dayName(fecha, true, lang)}
                   {esHoy && <span className="pill current" style={{ marginLeft: 8 }}>{t('common.today')}</span>}
+                  {descanso && (
+                    <span className="pill" style={{ marginLeft: 8 }}>{t('transport.restBadge')}</span>
+                  )}
                   {esPago && (
                     <span className="pill" style={{ marginLeft: 8, color: 'var(--online)', borderColor: 'var(--online)' }}>
                       {t('common.payday')}
@@ -192,12 +238,22 @@ export default function TransportExpenses() {
                 </div>
                 <div className="day-date">{formatShort(fecha, lang)}</div>
               </div>
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, opacity: 1 }}>
+                  <input
+                    type="checkbox"
+                    style={{ width: 'auto' }}
+                    checked={descanso}
+                    disabled={bloqueado}
+                    onChange={(e) => marcarDescanso(fecha, e.target.checked)}
+                  />
+                  {t('transport.restDay')}
+                </label>
                 <div style={{ width: 90 }}>
                   <label>{t('transport.normal')}</label>
                   <DraftNumber
                     min="0"
-                    disabled={bloqueado}
+                    disabled={bloqueado || descanso}
                     value={normalMostrado}
                     placeholder="0"
                     onCommit={(n) => setTransporteDia(fecha, 'normal', n)}
@@ -207,7 +263,7 @@ export default function TransportExpenses() {
                   <label>{t('transport.transfer2')}</label>
                   <DraftNumber
                     min="0"
-                    disabled={bloqueado}
+                    disabled={bloqueado || descanso}
                     value={transbordoMostrado}
                     placeholder="0"
                     onCommit={(n) => setTransporteDia(fecha, 'transbordo', n)}
