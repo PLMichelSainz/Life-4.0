@@ -108,3 +108,26 @@ describe('quincena trabajada (Horas extra / Calendario)', () => {
     expect(semanas.length).toBeLessThanOrEqual(4)
   })
 })
+
+describe('numeración de quincenas (1–24 por año)', () => {
+  it('modo calendario: 1 = 1–15 ene, 24 = 16–31 dic', () => {
+    expect(quincenaDe('2027-01-10', 'calendario').numero).toBe(1)
+    expect(quincenaDe('2027-01-20', 'calendario').numero).toBe(2)
+    expect(quincenaDe('2026-12-10', 'calendario').numero).toBe(23)
+    const ultima = quincenaDe('2026-12-20', 'calendario')
+    expect(ultima.numero).toBe(24)
+    expect(ultima.anio).toBe(2026)
+  })
+  it('modo pago: 1 empieza el 15 ene; 24 empieza el último día de dic y llega al 14 ene', () => {
+    expect(quincenaDe('2027-01-15').numero).toBe(1)
+    const q = quincenaDe('2026-12-31')
+    expect([q.numero, q.anio, q.end]).toEqual([24, 2026, '2027-01-14'])
+    expect(quincenaDe('2027-01-05').numero).toBe(24)
+  })
+  it('hay exactamente 24 números por año y se reinician cada enero', () => {
+    const nums = new Set()
+    for (let k = 2027 * 24; k < 2028 * 24; k++) nums.add(quincenaPorIndice(k).numero)
+    expect(nums.size).toBe(24)
+    expect(quincenaPorIndice(2028 * 24).numero).toBe(1)
+  })
+})

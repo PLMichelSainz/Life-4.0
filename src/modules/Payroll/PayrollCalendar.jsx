@@ -12,7 +12,7 @@ export default function PayrollCalendar() {
   return (
     <div>
       <div className="card ticket" style={{ borderColor: 'var(--accent)' }}>
-        <p className="pill current">{t('payroll.currentBiweek')}</p>
+        <p className="pill current">{t('payroll.currentBiweek')} · #{actual.numero}/24 · {actual.anio}</p>
         <h2 className="display" style={{ margin: '10px 0 2px' }}>
           {formatShort(actual.start, lang)} – {formatShort(actual.end, lang)}
         </h2>
@@ -33,7 +33,7 @@ export default function PayrollCalendar() {
               </div>
               <div className="day-date">{t('payroll.pay')} {formatLong(c.payDate, lang)}</div>
             </div>
-            <span className="pill mono">#{c.index}</span>
+            <span className="pill mono">#{c.numero}/24 · {c.anio}</span>
           </div>
         ))}
       </div>

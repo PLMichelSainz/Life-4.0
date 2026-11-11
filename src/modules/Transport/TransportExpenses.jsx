@@ -95,7 +95,7 @@ export default function TransportExpenses() {
       <div className="card">
         <p className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {t('transport.accumulated')}
-          <span className="pill current">{esActual ? t('transport.currentPeriod') : t('transport.period')}</span>
+          <span className="pill current">{esActual ? t('transport.currentPeriod') : t('transport.period')} · #{quincena.numero}/24 · {quincena.anio}</span>
         </p>
         <p className="card-sub">
           {formatShort(quincena.start, lang)} – {formatShort(quincena.end, lang)} · {t('transport.daysCount')(quincena.dias)} · {t('transport.paidOn')} {formatShort(quincena.payDate, lang)} · {t('transport.nextPay')} {formatShort(quincena.siguientePago, lang)}

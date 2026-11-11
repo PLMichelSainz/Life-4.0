@@ -200,7 +200,7 @@ export default function OvertimeCalculator() {
         <p className="card-sub" style={{ margin: 0 }}>{t('overtime.rateInfo')(formatMXN(tarifa), HORAS_EFECTIVAS_DIA)}</p>
       </div>
       <div className="card ticket" style={{ borderColor: 'var(--accent)' }}>
-        <p className="pill current">{quincena.index === indiceQuincenaTrabajada(hoy) ? t('overtime.currentBiweek') : t('overtime.biweek')}</p>
+        <p className="pill current">{quincena.index === indiceQuincenaTrabajada(hoy) ? t('overtime.currentBiweek') : t('overtime.biweek')} · #{quincena.numero}/24 · {quincena.anio}</p>
         <h2 className="display" style={{ margin: '10px 0 2px' }}>
           {formatShort(quincena.start, lang)} – {formatShort(quincena.end, lang)}
         </h2>

@@ -77,7 +77,13 @@ export function quincenaPorIndice(k, modo = MODO_PERIODO) {
   const siguientePago = ajustarPago(addDays(sig.pagoNominal, desfase))
   const dias = Math.round((parseISODate(end) - parseISODate(start)) / 86400000) + 1
   const { y, m0, mitadB } = desindexar(k)
-  return { index: k, start, end, payDate, siguientePago, dias, etiqueta: `${y}-${pad2(m0 + 1)}-${mitadB ? 'B' : 'A'}` }
+  // numero: 1 = primera quincena de enero ... 24 = quincena del 30–31 de diciembre (por fecha de pago).
+  return {
+    index: k, start, end, payDate, siguientePago, dias,
+    numero: m0 * 2 + (mitadB ? 1 : 0) + 1,
+    anio: y,
+    etiqueta: `${y}-${pad2(m0 + 1)}-${mitadB ? 'B' : 'A'}`,
+  }
 }
 
 /** Quincena que contiene `iso`. */
