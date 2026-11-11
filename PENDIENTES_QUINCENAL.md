@@ -11,7 +11,10 @@
 - `utils/overtime.js`: `calcularSemanaParcial` (semanas lunes–domingo partidas entre dos quincenas; las horas > 48 se pagan en la quincena donde ocurren).
 - Módulos migrados: Transporte (+ descansos), Presupuesto, Horas extra (3–4 semanas por quincena, días de otra quincena bloqueados), Captura de horario, Calendario de pagos, Salarios (sueldo mensual → diario → quincena, ISR/IMSS a 15 días).
 - Textos es/en/fr, marca "Quincena" (título, sidebar, README). `grep -ri catorcen src` = sin resultados.
-- Pruebas Vitest: payroll.test.js, overtime.test.js.
+- Pruebas Vitest: payroll.test.js, overtime.test.js, isr.test.js, imss.test.js.
+- IMSS verificado (2.375 % + 0.40 % sobre excedente de 3 UMA, UMA $117.31).
+- Horas extra adaptadas al salario diario (ver supuesto 3); se quitó la nota de aviso.
+- Revisión estática (tsc): sin nombres no definidos ni imports/exports rotos.
 
 ### NO verificado (sin red en el entorno)
 - `npm install && npm run build && npm test`. Solo se comprobó sintaxis (tsc) y la lógica con un shim.
@@ -19,10 +22,10 @@
 ### Supuestos (confirmar)
 1. Periodo trabajado = quincena calendario; el pago es el mismo día que cierra (desfase 0). Antes: pago 5 días después.
 2. Pago el 15/último aunque sea inhábil.
-3. Tarifas de HORAS EXTRA siguen en $52.76/h y umbral de 48 h (`utils/overtime.js`): NO se tocaron porque el salario nuevo es diario. Falta definir tarifa/hora del nuevo trabajo (depende de las horas efectivas del turno 10–20).
-4. Subsidio al empleo en `utils/isr.js` usa tope $9,081 / $406.83 mensual: verificar vigencia 2026 (con 9,900 mensual queda sin subsidio).
-5. Días de descanso: elige 2 en Transporte (patrón vacío por defecto).
+3. HECHO (respuestas del usuario): horas extra siguen con regla 48 h / doble (hasta 9) / triple (hasta 12). Tarifa por hora = salario diario ÷ 9 h efectivas (10 h de turno − 1 h de comida) = $36.67 (`HORAS_EFECTIVAS_DIA` en config.js; sigue al salario editado en Salarios). Las horas ≤48 ya están en el salario: Horas extra muestra y suma solo el pago extra (doble/triple).
+4. HECHO: subsidio al empleo corregido a la vigencia 2026 (tope $11,492.66, $535.65/mes feb–dic; Decreto DOF 31/dic/2025). Antes estaba desactualizado ($9,081 / $406.83). Con $9,900 mensual: ISR bruto 361.43 − subsidio 264.30 = ISR neto ≈ $97.13 por quincena. Tarifa mensual ISR 2026 y UMA $117.31 verificadas contra fuentes públicas; conviene contrastar con el Anexo 8 RMF 2026 oficial.
+5. HECHO: descansos rotativos (respuesta del usuario): en Transporte se deja el patrón vacío y se marca "Descanso" por día; el patrón fijo sigue disponible.
 6. Datos viejos: la clave `salaries.hourlyRate` queda en la nube sin uso; el salario nuevo vive en `salaries.dailyRate`.
 
 ### Preguntas abiertas
-Q3 horas efectivas del turno · Q4 descansos fijos o rotativos · Q6 ¿sigue el módulo de horas extra? y con qué tarifa · Q7 otras deducciones.
+Ninguna: sin Infonavit/Fonacot (confirmado) y periodo trabajado cierra el día de pago, sin desfase (confirmado). Solo falta compilar y probar (npm install/build/test) en un entorno con red.

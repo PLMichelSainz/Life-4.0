@@ -137,7 +137,7 @@ export default function TransportExpenses() {
             </button>
           ))}
         </div>
-        {patron.length !== DESCANSOS_POR_SEMANA && (
+        {patron.length > 0 && patron.length !== DESCANSOS_POR_SEMANA && (
           <p className="card-sub" style={{ marginTop: 10, marginBottom: 0 }}>
             {t('transport.restPickHint')(DESCANSOS_POR_SEMANA)}
           </p>

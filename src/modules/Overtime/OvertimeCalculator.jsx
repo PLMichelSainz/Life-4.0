@@ -3,6 +3,7 @@ import { useAppData } from '../../context/AppDataContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { addDays, formatShort, formatLong, dayName, todayISO, parseISODate, startOfWeekMonday } from '../../utils/dates'
 import { calcularSemanaParcial, formatMXN, LIMITE_LEGAL_SEMANAL } from '../../utils/overtime'
+import { HORAS_EFECTIVAS_DIA } from '../../utils/config'
 import { indiceQuincenaTrabajada, quincenaTrabajadaPorIndice, diasDeQuincena, semanasQueTocan } from '../../utils/payroll'
 import { totalesHorario, minAHoras, fmtDuracion, META_SEMANAL_HRS } from '../../utils/schedule'
 import ScheduleCapture from './ScheduleCapture'
@@ -87,7 +88,7 @@ function BloqueSemana({ titulo, weekStart, inicio, fin, horas, onChange, underti
         <div className="stat">
           <div className="label">{t('overtime.ordinary')(LIMITE_LEGAL_SEMANAL)}</div>
           <div className="value mono">{resultado.ordinarias} {t('overtime.hrs')}</div>
-          <div className="label mono">{formatMXN(resultado.pagoOrdinario)}</div>
+          <div className="label">{t('overtime.inSalary')}</div>
         </div>
         <div className="stat">
           <div className="label">{t('overtime.double')}</div>
@@ -110,7 +111,7 @@ function BloqueSemana({ titulo, weekStart, inicio, fin, horas, onChange, underti
 
       <div className="stat" style={{ marginTop: 14, background: 'transparent', border: '1px solid var(--accent)' }}>
         <div className="label">{t('overtime.weekTotal')}</div>
-        <div className="value accent mono" style={{ fontSize: '1.3rem' }}>{formatMXN(resultado.total_pago)}</div>
+        <div className="value accent mono" style={{ fontSize: '1.3rem' }}>{formatMXN(resultado.pagoExtra)}</div>
       </div>
 
       {nDias > 0 && (
@@ -157,7 +158,8 @@ function BloqueSemana({ titulo, weekStart, inicio, fin, horas, onChange, underti
 }
 
 export default function OvertimeCalculator() {
-  const { horasPorSemana, setHorasDia, undertimePorSemana, setUndertimeDia, horarios, setHorario, removeHorario } = useAppData()
+  const { horasPorSemana, setHorasDia, undertimePorSemana, setUndertimeDia, horarios, setHorario, removeHorario, salarioDiario } = useAppData()
+  const tarifa = salarioDiario / HORAS_EFECTIVAS_DIA // tarifa/hora derivada del salario diario
   const { t, lang } = useLanguage()
   const hoy = todayISO()
   const [indice, setIndice] = useState(indiceQuincenaTrabajada(hoy))
@@ -177,9 +179,9 @@ export default function OvertimeCalculator() {
       const under = undertimePorSemana[weekStart] || [0, 0, 0, 0, 0, 0, 0]
       const desde = Math.max(0, dif(quincena.start, weekStart))
       const hasta = Math.min(6, dif(quincena.end, weekStart))
-      return { n: n + 1, weekStart, horas, under, resultado: calcularSemanaParcial(efectivas(horas, under), weekStart, desde, hasta) }
+      return { n: n + 1, weekStart, horas, under, resultado: calcularSemanaParcial(efectivas(horas, under), weekStart, desde, hasta, tarifa) }
     })
-  }, [quincena.start, quincena.end, horasPorSemana, undertimePorSemana])
+  }, [quincena.start, quincena.end, horasPorSemana, undertimePorSemana, tarifa])
 
   // Guarda el horario leído y llena las horas del día con Open + Schedule Extension.
   function aplicarHorario(fechaISO, rows) {
@@ -189,11 +191,14 @@ export default function OvertimeCalculator() {
     setHorasDia(semana, idx, Math.round((totalesHorario(rows).trabajado / 60) * 10000) / 10000)
   }
 
-  const totalQuincena = semanas.reduce((a, w) => a + w.resultado.total_pago, 0)
+  const totalQuincena = semanas.reduce((a, w) => a + w.resultado.pagoExtra, 0)
   const totalHoras = redondear2(semanas.reduce((a, w) => a + w.resultado.total, 0))
 
   return (
     <div>
+      <div className="card" >
+        <p className="card-sub" style={{ margin: 0 }}>{t('overtime.rateInfo')(formatMXN(tarifa), HORAS_EFECTIVAS_DIA)}</p>
+      </div>
       <div className="card ticket" style={{ borderColor: 'var(--accent)' }}>
         <p className="pill current">{quincena.index === indiceQuincenaTrabajada(hoy) ? t('overtime.currentBiweek') : t('overtime.biweek')}</p>
         <h2 className="display" style={{ margin: '10px 0 2px' }}>

@@ -30,3 +30,23 @@ describe('calcularSemanaParcial', () => {
     cerca(antes.pagoOrdinario, 40 * TARIFA_ORDINARIA)
   })
 })
+
+describe('tarifa derivada del salario diario', () => {
+  it('330 ÷ 9 h = 36.67/h; solo el extra se paga aparte', () => {
+    cerca(TARIFA_ORDINARIA, 330 / 9)
+    const h = [10, 10, 10, 10, 10, 5, 0] // 55 h -> 7 extras dobles
+    const r = calcularSemana(h, SEM)
+    cerca(r.pagoExtra, 7 * 2 * (330 / 9))
+    cerca(r.total_pago, r.pagoOrdinario + r.pagoExtra)
+  })
+  it('semana de 5 días × 9 h = 45 h no genera extras', () => {
+    expect(calcularSemana([9, 9, 9, 9, 9, 0, 0], SEM).pagoExtra).toBe(0)
+  })
+  it('acepta tarifa distinta y parcial suma igual', () => {
+    const h = [10, 10, 10, 10, 10, 5, 0]
+    const t = 40
+    const a = calcularSemanaParcial(h, SEM, 0, 2, t)
+    const b = calcularSemanaParcial(h, SEM, 3, 6, t)
+    cerca(a.pagoExtra + b.pagoExtra, calcularSemana(h, SEM, t).pagoExtra)
+  })
+})
