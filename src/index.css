@@ -14,6 +14,7 @@
   --online: #4f9d69;
   --offline: #d9534f;
   --danger: #e0645f;
+  --danger-text: #f07872; /* texto de botones de eliminar: contraste 4.7:1 sobre el fondo oscuro */
 
   --font-display: 'Space Grotesk', sans-serif;
   --font-body: 'Inter', sans-serif;
@@ -33,6 +34,7 @@
 }
 
 html[data-theme='light'] {
+  --danger-text: #b3261e; /* contraste 5.5:1 sobre el fondo claro */
   --ink: #e9ede7;
   --surface: #ffffff;
   --surface-2: #f4f6f1;
@@ -327,7 +329,14 @@ label { font-size: 0.72rem; color: var(--text-muted); display: block; margin-bot
 }
 .btn:active { transform: translateY(1px); box-shadow: none; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
-.btn.danger { color: var(--danger); border-color: var(--danger); background: transparent; box-shadow: none; }
+.btn.danger {
+  color: var(--danger-text);
+  border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  box-shadow: none;
+  font-weight: 600;
+}
+.btn.danger:hover:not(:disabled) { background: color-mix(in srgb, var(--danger) 26%, transparent); }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .day-row {

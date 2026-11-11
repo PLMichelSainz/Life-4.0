@@ -351,7 +351,7 @@ export default function Budget() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
           <p className="card-title">{t('budget.currentMoneyTitle')}</p>
           <button
-            className="btn"
+            className="btn danger"
             disabled={cuentas.length === 0}
             onClick={() => pedirConfirmacion(resetCuentas, { mensaje: t('budget.resetAccountsConfirm'), boton: t('budget.resetBtn') })}
           >
@@ -399,7 +399,7 @@ export default function Budget() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
           <p className="card-title">{t('budget.incomeTitle')}</p>
           <button
-            className="btn"
+            className="btn danger"
             disabled={ingresos.length === 0}
             onClick={() => pedirConfirmacion(resetIngresos, { mensaje: t('budget.resetIncomeConfirm'), boton: t('budget.resetBtn') })}
           >
@@ -435,7 +435,7 @@ export default function Budget() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
           <p className="card-title">{t('budget.fixedExpensesTitle')}</p>
           <button
-            className="btn"
+            className="btn danger"
             disabled={gastosFijos.length === 0}
             onClick={() => pedirConfirmacion(() => resetPagosGastosFijos(periodo), { mensaje: t('budget.resetFixedConfirm'), boton: t('budget.resetBtn') })}
           >
