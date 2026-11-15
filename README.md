@@ -1,8 +1,10 @@
 # Quincena — Finanzas y Tiempo
 
 App web (Vite + React) para calcular horas extra, consultar quincenas de pago,
-registrar gastos de transporte y llevar una lista de deseos. Persistencia 100%
-en el cliente vía `localStorage` (sin backend, ideal para Vercel estático).
+registrar gastos de transporte, deudas, presupuesto y más. Los datos se guardan en
+Supabase (Auth + tabla `app_state`) y se sincronizan entre dispositivos. Se despliega en Vercel.
+Ver `supabase/README.md` para configurarlo. El botón **Respaldo / Restaurar** de la barra
+superior exporta e importa tus datos en JSON.
 
 ## Desarrollo local
 
@@ -26,8 +28,8 @@ npm run preview
    Output directory: `dist`.
 4. Deploy. `vercel.json` ya incluye el rewrite SPA necesario.
 
-No se requiere ninguna variable de entorno ni base de datos: todo el estado
-(vive en `localStorage` del navegador de cada usuario.
+Variables de entorno requeridas en Vercel: `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`
+(nunca pongas la `service_role` key en el frontend).
 
 ## Estructura
 

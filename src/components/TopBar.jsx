@@ -3,6 +3,7 @@ import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { FlagIcon, IDIOMAS } from './Flags'
+import BackupButtons from './BackupButtons'
 
 export default function TopBar({ moduleId }) {
   const { theme, toggleTheme } = useTheme()
@@ -16,6 +17,7 @@ export default function TopBar({ moduleId }) {
       </div>
       <div className="topbar-left">
         <StatusBadge />
+        <BackupButtons />
         <button
           className="theme-toggle"
           onClick={toggleLang}

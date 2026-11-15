@@ -71,9 +71,10 @@ export function useCloudState(userId, key, initialValue) {
 
     let activo = true
     let channel
+    let reintentoCarga = null
 
     async function cargar() {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('app_state')
         .select('value')
         .eq('user_id', userId)
@@ -81,6 +82,13 @@ export function useCloudState(userId, key, initialValue) {
         .maybeSingle()
 
       if (!activo) return
+      // Si la lectura falla (red, sesión), NO se marca como listo: de lo contrario
+      // el valor inicial vacío se guardaría encima de los datos reales de la nube.
+      if (error) {
+        console.error('Error cargando de la nube, reintentando:', error.message)
+        reintentoCarga = setTimeout(cargar, REINTENTO_MS)
+        return
+      }
       if (data) {
         sincronizadoRef.current = JSON.stringify(data.value)
         setValue(data.value)
@@ -127,6 +135,7 @@ export function useCloudState(userId, key, initialValue) {
 
     return () => {
       activo = false
+      if (reintentoCarga) clearTimeout(reintentoCarga)
       vaciar()
       window.removeEventListener('pagehide', vaciar)
       document.removeEventListener('visibilitychange', alOcultar)

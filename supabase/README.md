@@ -1,7 +1,8 @@
 # Configurar Supabase (una sola vez)
 
 1. Crea un proyecto gratis en https://supabase.com.
-2. En **SQL Editor**, pega y ejecuta `supabase/schema.sql` (crea la tabla y sus permisos).
+2. En **SQL Editor**, pega y ejecuta `supabase/migrations/20260101000000_app_state.sql` (idempotente: segura aunque la tabla ya exista).
+   Los cambios futuros de base de datos van como nuevos archivos en `supabase/migrations/`, siempre aditivos. Antes de cualquier cambio haz un respaldo (botón "Respaldo" de la app y/o Backups de Supabase).
 3. En **Authentication > Providers**, deja habilitado "Email". Si no quieres que pida confirmar
    correo, desactiva "Confirm email" en Authentication > Settings (más rápido para uso personal).
 4. En **Project Settings > API**, copia:

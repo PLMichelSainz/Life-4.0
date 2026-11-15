@@ -1,3 +1,6 @@
+-- ⚠️ SOLO PARA UN PROYECTO NUEVO. Si ya tienes datos, NO lo ejecutes:
+-- usa supabase/migrations/ (idempotentes y aditivas).
+
 -- Ejecuta esto una vez en el SQL Editor de tu proyecto Supabase.
 
 create table if not exists public.app_state (
