@@ -3,6 +3,9 @@ import DraftNumber from '../../components/DraftNumber'
 import { useAppData } from '../../context/AppDataContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { quincenaPorIndice, indiceQuincena, diasDeQuincena } from '../../utils/payroll'
+
+// Transporte usa quincena calendario: 1–15 y 16–último día (30/31, 28/29 en febrero).
+const MODO = 'calendario'
 import { DESCANSOS_POR_SEMANA } from '../../utils/config'
 import { translations } from '../../i18n/translations'
 import { todayISO, formatShort, dayName, parseISODate } from '../../utils/dates'
@@ -30,13 +33,13 @@ export default function TransportExpenses() {
   } = useAppData()
   const { t, lang } = useLanguage()
   const hoy = todayISO()
-  const [indice, setIndice] = useState(indiceQuincena(hoy))
+  const [indice, setIndice] = useState(indiceQuincena(hoy, MODO))
 
   const [defNormal, setDefNormal] = useState(String(transporteDefault.normal))
   const [defTransbordo, setDefTransbordo] = useState(String(transporteDefault.transbordo))
 
-  const quincena = useMemo(() => quincenaPorIndice(indice), [indice])
-  const esActual = quincena.index === indiceQuincena(hoy)
+  const quincena = useMemo(() => quincenaPorIndice(indice, MODO), [indice])
+  const esActual = quincena.index === indiceQuincena(hoy, MODO)
   const dias = useMemo(() => diasDeQuincena(quincena.start, quincena.end), [quincena.start, quincena.end])
 
   // Descanso: la excepción del día manda; si no hay, aplica el patrón semanal (0=domingo..6=sábado).
@@ -211,7 +214,7 @@ export default function TransportExpenses() {
       </div>
 
       <div className="card">
-        <p className="card-title">{t('transport.dailyLog')} · v2026-11-10-B</p>
+        <p className="card-title">{t('transport.dailyLog')} · v2026-11-14-calendario</p>
         <p className="card-sub">{t('transport.dailyLogDesc')}</p>
         {dias.map((fecha) => {
           const bloqueado = fecha < hoy

@@ -67,10 +67,11 @@ src/
 **Módulo B — Quincenas** (`src/utils/payroll.js`)
 - Pagos el día 15 y el último día del mes. Índice de quincena = año*24 + mes*2 + (mitad B ? 1 : 0), sin fechas ancla.
 - `indiceQuincena()` calcula el índice de cualquier fecha; `quincenaDe()`
-  regresa la quincena vigente. Modo 'pago' (Transporte/Presupuesto: arranca el día de pago) y
-  modo 'calendario' (Horas extra/Calendario: 1–15 y 16–fin de mes).
+  regresa la quincena vigente. Modo 'pago' (Presupuesto: arranca el día de pago) y
+  modo 'calendario' (Horas extra/Calendario/Transporte: 1–15 y 16–fin de mes).
 
 **Módulo C — Transporte**
+- Periodo: quincena calendario (1–15 y 16–30/31; febrero 28/29), igual que Horas extra.
 - Camión normal $11.00 / Transbordo $5.50.
 - Los días de la quincena en curso anteriores a "hoy" quedan bloqueados
   (`disabled`) para edición.

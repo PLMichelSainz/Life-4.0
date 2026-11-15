@@ -229,7 +229,7 @@ export default function Budget() {
   const { t, lang } = useLanguage()
   const pedirConfirmacion = useConfirm()
   // El "periodo" que resetea los gastos fijos es la quincena de pago (15 y
-  // último de mes; mismo índice que Transporte): el monto pagado vuelve a $0
+  // último de mes; modo 'pago'; Transporte ya usa quincena calendario 1–15 / 16–fin): el monto pagado vuelve a $0
   // justo cuando llega tu siguiente día de pago.
   const periodo = indiceQuincena(todayISO())
   const quincenaActual = useMemo(() => quincenaPorIndice(periodo), [periodo])
