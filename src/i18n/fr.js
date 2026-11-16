@@ -316,6 +316,7 @@ export const fr = {
     paidThisPeriod: 'Payé cette période de paie',
     pendingThisPeriod: 'En attente',
     registerPayment: 'Inscrire le paiement',
+    payFull: 'Payer le total',
     paymentAmount: 'Montant à payer',
     fullyPaid: 'Payé',
     availableNowTitle: 'Disponible maintenant',

@@ -213,6 +213,9 @@ function GastoFijoFila({ gasto, t, periodo, onUpdate, onRemove, onPagar, onElimi
             <input type="number" min="0" value={abono} onChange={(e) => setAbono(e.target.value)} placeholder="0.00" />
           </div>
           <button type="submit" className="btn primary">{t('budget.registerPayment')}</button>
+          <button type="button" className="btn" onClick={() => onPagar(gasto.id, pendiente)}>
+            {t('budget.payFull')} ({formatMXN(pendiente)})
+          </button>
         </form>
       )}
     </div>
