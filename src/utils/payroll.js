@@ -59,12 +59,12 @@ function limitesQuincena(k, modo) {
     : { start: isoDe(y, m0, 15), end: isoDe(y, m0, ultimo - 1), pagoNominal: isoDe(y, m0, 15) }
 }
 
-// D2: adelanta un pago de fin de semana al viernes anterior (solo si el flag está activo).
+// D2: sábado -> viernes anterior; domingo -> lunes siguiente (solo si el flag está activo).
 function ajustarPago(iso) {
   if (!RECORRER_PAGO_A_HABIL) return iso
   const dow = parseISODate(iso).getDay()
   if (dow === 6) return addDays(iso, -1)
-  if (dow === 0) return addDays(iso, -2)
+  if (dow === 0) return addDays(iso, 1)
   return iso
 }
 

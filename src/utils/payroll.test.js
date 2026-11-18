@@ -26,7 +26,7 @@ describe('quincenas (modo pago)', () => {
     expect(ultimoDiaDelMes(2028, 1)).toBe(29)
     const a27 = quincenaDe('2027-02-20')
     expect(a27.end).toBe('2027-02-27')
-    expect(a27.siguientePago).toBe('2027-02-28')
+    expect(a27.siguientePago).toBe('2027-03-01') // 28 feb 2027 es domingo -> lunes
     const b27 = quincenaDe('2027-02-28')
     expect(b27.start).toBe('2027-02-28')
     expect(b27.end).toBe('2027-03-14')
@@ -80,7 +80,7 @@ describe('quincenas (modo pago)', () => {
 describe('quincena trabajada (Horas extra / Calendario)', () => {
   it('1–15 se paga el 15; 16–fin se paga el último día', () => {
     const a = quincenaTrabajadaPorIndice(indiceQuincenaTrabajada('2026-11-10'))
-    expect([a.start, a.end, a.payDate]).toEqual(['2026-11-01', '2026-11-15', '2026-11-15'])
+    expect([a.start, a.end, a.payDate]).toEqual(['2026-11-01', '2026-11-15', '2026-11-16']) // 15 nov es domingo -> lunes
     const b = quincenaTrabajadaPorIndice(indiceQuincenaTrabajada('2026-11-20'))
     expect([b.start, b.end, b.payDate]).toEqual(['2026-11-16', '2026-11-30', '2026-11-30'])
   })
@@ -129,5 +129,17 @@ describe('numeración de quincenas (1–24 por año)', () => {
     for (let k = 2027 * 24; k < 2028 * 24; k++) nums.add(quincenaPorIndice(k).numero)
     expect(nums.size).toBe(24)
     expect(quincenaPorIndice(2028 * 24).numero).toBe(1)
+  })
+})
+
+describe('pago en fin de semana (sáb -> vie, dom -> lun)', () => {
+  it('sábado 31 de enero 2026 se paga el viernes 30', () => {
+    expect(quincenaDe('2026-01-20', 'calendario').payDate).toBe('2026-01-30')
+  })
+  it('domingo 31 de mayo 2026 se paga el lunes 1 de junio', () => {
+    expect(quincenaDe('2026-05-20', 'calendario').payDate).toBe('2026-06-01')
+  })
+  it('domingo 31 de enero 2027 se paga el lunes 1 de febrero', () => {
+    expect(quincenaDe('2027-01-20', 'calendario').payDate).toBe('2027-02-01')
   })
 })
